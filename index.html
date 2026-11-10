@@ -1,0 +1,3402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#e52521">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>SUPER DK WORLD - 슈퍼 DK 월드</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
+  <style>
+    :root {
+      --red: #e52521;
+      --red-dark: #a8100d;
+      --gold: #fbd000;
+      --gold-dark: #d99b00;
+      --blue: #049cd8;
+      --blue-dark: #005596;
+      --green: #43b047;
+      --green-dark: #1e7a22;
+      --ink: #121829;
+      --panel-bg: rgba(16, 24, 48, 0.92);
+      --font: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #070b16;
+      font-family: var(--font);
+      color: #ffffff;
+      touch-action: none;
+    }
+
+    #app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #142242 0%, #070b16 100%);
+      overflow: hidden;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.85);
+      background: #5c94fc;
+    }
+
+    /* Top HUD Bar */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0) 100%);
+    }
+
+    .hud-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: nowrap;
+    }
+
+    .hud-pill {
+      background: rgba(14, 22, 42, 0.78);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+    }
+
+    .hud-pill.dk-badge {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(229,37,33,0.9) 0%, rgba(150,15,12,0.9) 100%);
+    }
+
+    .hud-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #ffd966;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .hud-val {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 2px 3px rgba(0,0,0,0.7);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .star-slots {
+      display: flex;
+      gap: 5px;
+      font-size: 1.25rem;
+    }
+
+    .star-slot {
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6));
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .star-slot.collected {
+      color: var(--gold);
+      transform: scale(1.18);
+    }
+
+    .star-slot.empty {
+      color: rgba(255, 255, 255, 0.28);
+    }
+
+    .hud-actions {
+      pointer-events: auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: rgba(18, 28, 52, 0.85);
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-radius: 12px;
+      padding: 7px 12px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+      transition: transform 0.1s;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Galaxy Tab Ergonomic Touch Controls */
+    #touchControls {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 12;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 18px 26px 24px 26px;
+    }
+
+    .dpad-cluster {
+      position: relative;
+      display: flex;
+      gap: 18px;
+      pointer-events: auto;
+      padding: 16px;
+      margin: -16px;
+    }
+
+    .action-cluster {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      pointer-events: auto;
+      padding: 16px;
+      margin: -16px;
+    }
+
+    /* Visual button has a 130% extended invisible touch hitbox via ::before */
+    .touch-btn {
+      position: relative;
+      width: 88px;
+      height: 88px;
+      border-radius: 26px;
+      border: 3px solid rgba(255, 255, 255, 0.55);
+      background: rgba(20, 32, 64, 0.58);
+      color: #ffffff;
+      font-size: 2.1rem;
+      font-weight: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+      transition: transform 0.06s, background 0.06s;
+      cursor: pointer;
+    }
+
+    .touch-btn::before {
+      content: "";
+      position: absolute;
+      inset: -16px; /* +30% extended hitbox for 6yo thumb forgiveness */
+      border-radius: 36px;
+    }
+
+    .touch-btn span.sub-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+      opacity: 0.9;
+    }
+
+    .touch-btn.pressed {
+      transform: scale(0.92) translateY(3px);
+      background: rgba(251, 208, 0, 0.82);
+      color: #121829;
+      border-color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 18px rgba(251, 208, 0, 0.7);
+    }
+
+    .touch-btn.btn-jump {
+      width: 102px;
+      height: 102px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(67, 176, 71, 0.78) 0%, rgba(28, 115, 32, 0.85) 100%);
+      border-color: #a8ffac;
+      font-size: 1.7rem;
+    }
+
+    .touch-btn.btn-jump.pressed {
+      background: #69f0ae;
+      color: #0b3b10;
+    }
+
+    .touch-btn.btn-fire {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255, 111, 0, 0.85) 0%, rgba(216, 27, 27, 0.9) 100%);
+      border-color: #ffe082;
+      font-size: 1.5rem;
+      animation: firePulse 1.2s infinite alternate;
+    }
+
+    .touch-btn.btn-fire.hidden {
+      display: none;
+    }
+
+    @keyframes firePulse {
+      0% { box-shadow: 0 0 10px rgba(255, 111, 0, 0.6); }
+      100% { box-shadow: 0 0 24px rgba(255, 213, 79, 0.95); }
+    }
+
+    /* Overlay Screens (Title, Stage Clear, Game Over, Victory) */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 13, 26, 0.82);
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      transition: opacity 0.25s ease;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 820px;
+      background: linear-gradient(180deg, #1b294d 0%, #101933 100%);
+      border: 4px solid var(--gold);
+      border-radius: 28px;
+      padding: 26px 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 2px 0 rgba(255,255,255,0.2);
+      text-align: center;
+      position: relative;
+      max-height: 94vh;
+      overflow-y: auto;
+    }
+
+    .title-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(180deg, #ff3b30 0%, #b8110e 100%);
+      border: 3px solid #fff3b0;
+      padding: 8px 24px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      margin-bottom: 10px;
+    }
+
+    .game-logo {
+      font-size: clamp(2rem, 4.5vw, 3.1rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: var(--gold);
+      text-shadow: 0 4px 0 #995500, 0 8px 18px rgba(0,0,0,0.7);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #c5d6ff;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    /* World Map Selector Grid */
+    .world-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 16px 0 20px 0;
+    }
+
+    .world-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 14px 10px;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .world-card:hover, .world-card.selected {
+      transform: translateY(-4px);
+      border-color: var(--gold);
+      background: rgba(251, 208, 0, 0.14);
+      box-shadow: 0 8px 22px rgba(251, 208, 0, 0.25);
+    }
+
+    .world-card.locked {
+      opacity: 0.55;
+      cursor: not-allowed;
+      filter: grayscale(0.6);
+    }
+
+    .world-code {
+      font-size: 0.8rem;
+      font-weight: 900;
+      color: #ffd54f;
+      background: rgba(0,0,0,0.45);
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 6px;
+    }
+
+    .world-icon {
+      font-size: 2.3rem;
+      margin: 4px 0;
+    }
+
+    .world-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+      word-break: keep-all;
+    }
+
+    .world-desc {
+      font-size: 0.74rem;
+      color: #b0c4de;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .world-stars {
+      font-size: 1.1rem;
+      letter-spacing: 3px;
+    }
+
+    /* Coaching Box for Resilience (Q6) */
+    .coaching-box {
+      background: linear-gradient(135deg, rgba(25, 118, 210, 0.28) 0%, rgba(13, 71, 161, 0.42) 100%);
+      border: 2px solid #64b5f6;
+      border-radius: 20px;
+      padding: 18px 22px;
+      margin: 16px auto 22px auto;
+      max-width: 660px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    .coaching-avatar {
+      font-size: 2.8rem;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.12);
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--gold);
+    }
+
+    .coaching-content h4 {
+      color: var(--gold);
+      font-size: 0.95rem;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .coaching-content p {
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+
+    .cta-btn {
+      background: linear-gradient(180deg, #ffe033 0%, #f59e0b 100%);
+      color: #1a1200;
+      border: 3px solid #ffffff;
+      border-radius: 999px;
+      padding: 14px 34px;
+      font-size: 1.2rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5), inset 0 2px 2px #fff;
+      transition: transform 0.12s, box-shadow 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cta-btn:active {
+      transform: scale(0.95) translateY(2px);
+    }
+
+    .cta-btn.secondary {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: none;
+      font-size: 1rem;
+      padding: 11px 22px;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Toast Banner */
+    #toastBanner {
+      position: absolute;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16, 24, 48, 0.92);
+      border: 2px solid var(--gold);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 999px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      z-index: 25;
+      pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+
+    #toastBanner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    @media (max-width: 780px) {
+      .world-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .touch-btn {
+        width: 74px;
+        height: 74px;
+        font-size: 1.7rem;
+      }
+      .touch-btn.btn-jump {
+        width: 88px;
+        height: 88px;
+      }
+      .touch-btn.btn-fire {
+        width: 72px;
+        height: 72px;
+      }
+      .modal-card {
+        padding: 18px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+    <!-- Top HUD -->
+    <div id="hud">
+      <div class="hud-group">
+        <div class="hud-pill dk-badge">
+          <span class="hud-label">HERO</span>
+          <span class="hud-val" id="hudLives">🍄 SUPER DK × 3</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">POWER</span>
+          <span class="hud-val" id="hudPower">꼬마 DK</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">WORLD</span>
+          <span class="hud-val" id="hudWorld">1-1</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">STAR COINS</span>
+          <div class="star-slots" id="hudStars">
+            <span class="star-slot empty">★</span>
+            <span class="star-slot empty">★</span>
+            <span class="star-slot empty">★</span>
+          </div>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">COINS</span>
+          <span class="hud-val" id="hudCoins">🪙 00</span>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-val" id="hudScore">000000</span>
+        </div>
+      </div>
+      <div class="hud-actions">
+        <button class="icon-btn" id="btnSound" title="사운드 켜기/끄기">🔊 사운드 ON</button>
+        <button class="icon-btn" id="btnMap" title="월드 선택 화면">🗺️ 월드맵</button>
+      </div>
+    </div>
+
+    <!-- Center Toast Notification -->
+    <div id="toastBanner">🚩 체크포인트 저장 완료!</div>
+
+    <!-- Galaxy Tab Ergonomic Touch Controller -->
+    <div id="touchControls">
+      <div class="dpad-cluster">
+        <div class="touch-btn" id="btnLeft" data-action="left">
+          <span>◀</span>
+          <span class="sub-label">왼쪽</span>
+        </div>
+        <div class="touch-btn" id="btnRight" data-action="right">
+          <span>▶</span>
+          <span class="sub-label">오른쪽</span>
+        </div>
+      </div>
+      <div class="action-cluster">
+        <div class="touch-btn btn-fire hidden" id="btnFire" data-action="fire">
+          <span>🔥</span>
+          <span class="sub-label">불꽃(B)</span>
+        </div>
+        <div class="touch-btn btn-jump" id="btnJump" data-action="jump">
+          <span>🚀</span>
+          <span class="sub-label">점프(A)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. Title & World Select Overlay -->
+    <div class="overlay" id="titleOverlay">
+      <div class="modal-card">
+        <div class="title-banner">🎁 아빠가 DK를 위해 만든 특별한 선물 게임</div>
+        <h1 class="game-logo">🍄 SUPER DK WORLD 🌟</h1>
+        <p class="subtitle" id="totalStarSummary">모은 스타코인: ★ 0 / 12개 및 도전할 월드를 선택하세요!</p>
+
+        <div class="world-grid" id="worldGrid"></div>
+
+        <div class="btn-row">
+          <button class="cta-btn" id="btnStartStage">🚀 선택한 월드 출발하기!</button>
+          <button class="cta-btn secondary" id="btnUnlockAll" title="부모님/DK 연습용 전체 월드 열기">🔓 전 스테이지 자유 해금</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Classic Game Over + Gifted Resilience Coaching Overlay (Q6) -->
+    <div class="overlay hidden" id="gameOverOverlay">
+      <div class="modal-card">
+        <div class="title-banner" style="background: linear-gradient(180deg, #ef5350 0%, #b71c1c 100%);">💡 아직(Not Yet)의 마법! 배움 구역(Learning Zone) 작동!</div>
+        <h1 class="game-logo" style="color: #ff6b6b;">GAME OVER</h1>
+        <p class="subtitle" id="gameOverStageInfo">WORLD 1-1 및 지금까지 모은 스타코인은 안전하게 보관되었어요!</p>
+
+        <div class="coaching-box">
+          <div class="coaching-avatar" id="coachingIcon">🧠</div>
+          <div class="coaching-content">
+            <h4 id="coachingTitle">🌟 슈퍼 DK를 위한 전략 힌트 & 과정 칭찬</h4>
+            <p id="coachingMessage">오! 배움의 순간이 왔어! 점프 버튼을 조금 더 길~게 누르면 훨씬 높이 날아올라! 방금 그 구멍 위치를 기억했으니 다시 가볼까?</p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="cta-btn" id="btnContinueCheckpoint">⚡ 생명 3개 충전하고 체크포인트에서 이어하기!</button>
+          <button class="cta-btn secondary" id="btnBackToMapFromGO">🗺️ 월드맵 선택</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Stage Clear / Final Victory Overlay -->
+    <div class="overlay hidden" id="clearOverlay">
+      <div class="modal-card">
+        <div class="title-banner" id="clearBanner">🎉 STAGE CLEAR!</div>
+        <h1 class="game-logo" id="clearTitle">월드를 멋지게 클리어했어요!</h1>
+        <p class="subtitle" id="clearSubtitle">슈퍼 DK의 끝까지 포기하지 않는 집중력이 빛났어요!</p>
+
+        <div class="coaching-box">
+          <div class="coaching-avatar">🏆</div>
+          <div class="coaching-content">
+            <h4>🌟 이번 스테이지 스타코인 & 기록</h4>
+            <p id="clearStatsText">획득한 스타코인: ★ ★ ★ (3/3)</p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="cta-btn" id="btnNextWorld">➡️ 다음 월드로 진격!</button>
+          <button class="cta-btn secondary" id="btnReplayStage">🔄 스타코인 더 찾으러 다시 하기</button>
+          <button class="cta-btn secondary" id="btnClearToMap">🗺️ 월드맵</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*************************************************************************
+     * SUPER DK WORLD - Complete 60fps HTML5 Platformer Engine
+     * Designed for DK (Born Nov 2020) on Samsung Galaxy Tab (Landscape PWA)
+     *************************************************************************/
+
+    const STORAGE_KEY = 'SUPER_DK_WORLD_SAVE_V1';
+
+    // Default Persistent State
+    const defaultSaveData = {
+      unlockedWorld: 1, // 1..4
+      selectedWorld: 1,
+      starCoins: {
+        1: [false, false, false],
+        2: [false, false, false],
+        3: [false, false, false],
+        4: [false, false, false]
+      },
+      checkpoints: {
+        1: false,
+        2: false,
+        3: false,
+        4: false
+      },
+      highScore: 0,
+      clearedWorlds: { 1: false, 2: false, 3: false, 4: false }
+    };
+
+    function loadSaveData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(defaultSaveData));
+        const parsed = JSON.parse(raw);
+        return {
+          unlockedWorld: parsed.unlockedWorld || 1,
+          selectedWorld: parsed.selectedWorld || 1,
+          starCoins: { ...defaultSaveData.starCoins, ...(parsed.starCoins || {}) },
+          checkpoints: { ...defaultSaveData.checkpoints, ...(parsed.checkpoints || {}) },
+          highScore: parsed.highScore || 0,
+          clearedWorlds: { ...defaultSaveData.clearedWorlds, ...(parsed.clearedWorlds || {}) }
+        };
+      } catch (e) {
+        return JSON.parse(JSON.stringify(defaultSaveData));
+      }
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+      } catch (e) {
+        // Ignore storage quota errors in private mode
+      }
+    }
+
+    let saveData = loadSaveData();
+
+    /*************************************************************************
+     * PHASE 4: Web Audio API Retro Chiptune & Sound Synthesizer (Zero External MP3)
+     *************************************************************************/
+    const BGM_THEMES = {
+      1: {
+        // World 1-1: 햇살 초원 (Bright Overworld Chiptune)
+        stepMs: 165,
+        leadType: 'square',
+        leadVol: 0.055,
+        bassVol: 0.07,
+        melody: [
+          659.25, 659.25, 0, 659.25, 0, 523.25, 659.25, 0,
+          783.99, 0, 0, 0, 392.00, 0, 0, 0,
+          523.25, 0, 0, 392.00, 0, 0, 329.63, 0,
+          440.00, 0, 493.88, 0, 466.16, 440.00, 0, 0
+        ],
+        bass: [
+          130.81, 0, 196.00, 0, 261.63, 0, 196.00, 0,
+          196.00, 0, 146.83, 0, 98.00, 0, 146.83, 0,
+          130.81, 0, 164.81, 0, 196.00, 0, 164.81, 0,
+          146.83, 0, 174.61, 0, 196.00, 0, 130.81, 0
+        ]
+      },
+      2: {
+        // World 1-2: 신비한 지하 동굴 (Rhythmic Underground Ostinato)
+        stepMs: 150,
+        leadType: 'square',
+        leadVol: 0.05,
+        bassVol: 0.08,
+        melody: [
+          261.63, 523.25, 220.00, 440.00, 233.08, 466.16, 0, 0,
+          261.63, 523.25, 220.00, 440.00, 233.08, 466.16, 0, 0,
+          174.61, 349.23, 146.83, 293.66, 155.56, 311.13, 0, 0,
+          196.00, 392.00, 220.00, 440.00, 246.94, 493.88, 0, 0
+        ],
+        bass: [
+          130.81, 0, 110.00, 0, 116.54, 0, 98.00, 0,
+          130.81, 0, 110.00, 0, 116.54, 0, 98.00, 0,
+          87.31, 0, 73.42, 0, 77.78, 0, 87.31, 0,
+          98.00, 0, 110.00, 0, 123.47, 0, 98.00, 0
+        ]
+      },
+      3: {
+        // World 1-3: 구름 다리 하늘길 (Bouncy Athletic Sky Theme)
+        stepMs: 145,
+        leadType: 'square',
+        leadVol: 0.055,
+        bassVol: 0.07,
+        melody: [
+          523.25, 659.25, 783.99, 1046.50, 880.00, 783.99, 659.25, 523.25,
+          587.33, 698.46, 880.00, 1174.66, 987.77, 880.00, 783.99, 0,
+          659.25, 783.99, 987.77, 1318.51, 1174.66, 1046.50, 880.00, 783.99,
+          698.46, 659.25, 587.33, 659.25, 523.25, 0, 783.99, 0
+        ],
+        bass: [
+          261.63, 196.00, 261.63, 196.00, 220.00, 164.81, 220.00, 164.81,
+          146.83, 220.00, 146.83, 220.00, 196.00, 146.83, 196.00, 146.83,
+          164.81, 246.94, 164.81, 246.94, 220.00, 164.81, 220.00, 164.81,
+          174.61, 196.00, 220.00, 246.94, 261.63, 196.00, 130.81, 0
+        ]
+      },
+      4: {
+        // World 1-4: 대마왕 쿠파 성 (Dramatic Bowser's Castle Theme)
+        stepMs: 135,
+        leadType: 'sawtooth',
+        leadVol: 0.045,
+        bassVol: 0.08,
+        melody: [
+          293.66, 311.13, 293.66, 277.18, 293.66, 311.13, 293.66, 0,
+          349.23, 369.99, 349.23, 329.63, 349.23, 369.99, 349.23, 0,
+          440.00, 466.16, 440.00, 415.30, 440.00, 523.25, 493.88, 440.00,
+          392.00, 0, 369.99, 0, 329.63, 0, 293.66, 0
+        ],
+        bass: [
+          146.83, 146.83, 0, 146.83, 155.56, 155.56, 0, 146.83,
+          174.61, 174.61, 0, 174.61, 185.00, 185.00, 0, 174.61,
+          220.00, 0, 207.65, 0, 196.00, 0, 185.00, 0,
+          146.83, 0, 138.59, 0, 130.81, 0, 110.00, 0
+        ]
+      }
+    };
+
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.bgmPlaying = false;
+        this.bgmWorld = 1;
+        this.bgmStep = 0;
+        this.bgmTimer = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            this.ctx = new AudioCtx();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      tone(freq, type, duration, startTime = 0, vol = 0.16, slideTo = null) {
+        if (!this.enabled || !this.ctx || freq <= 0) return;
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        if (slideTo) {
+          osc.frequency.exponentialRampToValueAtTime(slideTo, now + duration);
+        }
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + duration);
+      }
+
+      startBGM(worldId = 1) {
+        this.stopBGM();
+        this.bgmWorld = worldId;
+        this.bgmStep = 0;
+        this.bgmPlaying = true;
+        if (!this.enabled) return;
+        this.init();
+        this.scheduleBGM();
+      }
+
+      scheduleBGM() {
+        clearTimeout(this.bgmTimer);
+        if (!this.bgmPlaying || !this.enabled) return;
+        const theme = BGM_THEMES[this.bgmWorld] || BGM_THEMES[1];
+        const idx = this.bgmStep % theme.melody.length;
+        const leadNote = theme.melody[idx];
+        const bassNote = theme.bass[idx];
+        const durSec = (theme.stepMs / 1000) * 0.85;
+
+        if (this.ctx) {
+          if (leadNote > 0) {
+            this.tone(leadNote, theme.leadType, durSec, 0, theme.leadVol);
+          }
+          if (bassNote > 0) {
+            this.tone(bassNote, 'triangle', durSec * 0.95, 0, theme.bassVol);
+          }
+        }
+
+        this.bgmStep++;
+        this.bgmTimer = setTimeout(() => this.scheduleBGM(), theme.stepMs);
+      }
+
+      stopBGM() {
+        this.bgmPlaying = false;
+        if (this.bgmTimer) {
+          clearTimeout(this.bgmTimer);
+          this.bgmTimer = null;
+        }
+      }
+
+      toggleMute() {
+        this.enabled = !this.enabled;
+        if (!this.enabled) {
+          if (this.bgmTimer) {
+            clearTimeout(this.bgmTimer);
+            this.bgmTimer = null;
+          }
+        } else if (this.bgmPlaying && currentState === GAME_STATE.PLAYING) {
+          this.init();
+          this.scheduleBGM();
+        }
+        return this.enabled;
+      }
+
+      jump(isSuper = false) {
+        this.init();
+        this.tone(isSuper ? 260 : 330, 'square', 0.18, 0, 0.14, isSuper ? 680 : 780);
+      }
+
+      coin() {
+        this.init();
+        this.tone(987.77, 'square', 0.08, 0, 0.13);
+        this.tone(1318.51, 'square', 0.26, 0.07, 0.13);
+      }
+
+      starCoin() {
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        notes.forEach((n, i) => this.tone(n, 'triangle', 0.16, i * 0.06, 0.2));
+      }
+
+      powerUp() {
+        this.init();
+        const notes = [330, 392, 659, 523, 587, 784, 1046];
+        notes.forEach((n, i) => this.tone(n, 'square', 0.09, i * 0.055, 0.14));
+      }
+
+      powerDown() {
+        this.init();
+        const notes = [659, 523, 392, 261];
+        notes.forEach((n, i) => this.tone(n, 'sawtooth', 0.09, i * 0.06, 0.14));
+      }
+
+      oneUp() {
+        this.init();
+        const notes = [330, 392, 659, 523, 587, 784];
+        notes.forEach((n, i) => this.tone(n, 'triangle', 0.11, i * 0.08, 0.2));
+      }
+
+      fireball() {
+        this.init();
+        this.tone(880, 'sawtooth', 0.09, 0, 0.12, 220);
+      }
+
+      stomp() {
+        this.init();
+        this.tone(180, 'square', 0.12, 0, 0.16, 520);
+      }
+
+      kick() {
+        this.init();
+        this.tone(240, 'square', 0.1, 0, 0.18, 660);
+      }
+
+      bump() {
+        this.init();
+        this.tone(160, 'triangle', 0.09, 0, 0.18, 90);
+      }
+
+      checkpoint() {
+        this.init();
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((n, i) => this.tone(n, 'triangle', 0.14, i * 0.07, 0.18));
+      }
+
+      loseLife() {
+        this.stopBGM();
+        this.init();
+        const notes = [493.88, 698.46, 698.46, 659.25, 587.33, 523.25, 392, 261.63];
+        notes.forEach((n, i) => this.tone(n, 'square', 0.12, i * 0.09, 0.14));
+      }
+
+      gameOver() {
+        this.stopBGM();
+        this.init();
+        const notes = [523.25, 392.00, 329.63, 440.00, 493.88, 440.00, 415.30, 466.16, 415.30, 392.00];
+        notes.forEach((n, i) => this.tone(n, 'triangle', 0.16, i * 0.12, 0.18));
+      }
+
+      stageClear() {
+        this.stopBGM();
+        this.init();
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 659.25, 783.99, 1046.50];
+        const times = [0, 0.1, 0.2, 0.3, 0.4, 0.55, 0.75, 0.9, 1.08];
+        notes.forEach((n, i) => this.tone(n, 'square', 0.18, times[i], 0.16));
+      }
+
+      bossHit() {
+        this.init();
+        this.tone(140, 'sawtooth', 0.18, 0, 0.2, 70);
+      }
+    }
+
+    const sfx = new SoundEngine();
+
+    /*************************************************************************
+     * PHASE 3: 4 Themed Worlds Metadata & Level Builder
+     *************************************************************************/
+    const WORLD_METADATA = {
+      1: {
+        code: '1-1',
+        name: '햇살 초원',
+        subtitle: 'Grassland Adventure',
+        icon: '🌳',
+        desc: '물음표 블록을 두드리고 초원 위 스타코인 3개를 모아보세요!',
+        skyTop: '#3b82f6',
+        skyBottom: '#93c5fd',
+        groundColor: '#c84c0c',
+        grassColor: '#38b000'
+      },
+      2: {
+        code: '1-2',
+        name: '신비한 지하 동굴',
+        subtitle: 'Underground Cavern',
+        icon: '💎',
+        desc: '푸른 벽돌 천장 위 비밀 통로와 파이어플라워의 힘을 발견하세요!',
+        skyTop: '#090d1e',
+        skyBottom: '#1a2744',
+        groundColor: '#1d4ed8',
+        grassColor: '#60a5fa'
+      },
+      3: {
+        code: '1-3',
+        name: '구름 다리 하늘길',
+        subtitle: 'Athletic Sky Bridge',
+        icon: '☁️',
+        desc: '움직이는 구름 엘리베이터와 통통 점프대로 하늘 끝까지 날아올라요!',
+        skyTop: '#0284c7',
+        skyBottom: '#fde68a',
+        groundColor: '#f8fafc',
+        grassColor: '#fbbf24'
+      },
+      4: {
+        code: '1-4',
+        name: '대마왕 쿠파 성',
+        subtitle: "Bowser's Castle Boss",
+        icon: '🏰',
+        desc: '파이어볼 5방을 맞히거나 대마왕 뒤의 황금 도끼(Axe)를 찍어 다리를 무너뜨리세요!',
+        skyTop: '#1f0808',
+        skyBottom: '#450a0a',
+        groundColor: '#52525b',
+        grassColor: '#dc2626'
+      }
+    };
+
+    const TILE = 48; // 48px tile grid (15 rows = 720px height)
+
+    // Resilience Coaching Database (Gifted Parenting Pillar 6: Process Praise & Strategy Hints)
+    const COACHING_DB = {
+      pit: {
+        icon: '🦘',
+        title: '🌟 배움의 순간! (낙사 극복 전략 힌트)',
+        messages: [
+          '오! 배움의 순간이 왔어! 점프 버튼을 조금 더 길~게 꾹 누르면 훨씬 높이 날아올라! 방금 그 구멍 위치를 기억했으니 다시 가볼까?',
+          '아깝다! 절벽 끝에서 떨어지기 직전에도 점프(코요테 점프)가 된단다! 오른쪽 화살표와 점프를 리듬감 있게 눌러보자!'
+        ]
+      },
+      enemy: {
+        icon: '🐢',
+        title: '🌟 배움의 순간! (몬스터 대처 전략 힌트)',
+        messages: [
+          '아깝다! 거북이나 굼바가 다가올 때 위에서 콩! 밟거나 파이어볼을 던져보자. 슈퍼 DK는 할 수 있어!',
+          '몬스터의 움직임을 잠깐 멈춰서 관찰해 볼까? 위에서 넓게 점프해 밟으면 멋지게 물리칠 수 있어!'
+        ]
+      },
+      boss: {
+        icon: '👑',
+        title: '🌟 배움의 순간! (대마왕 쿠파 공략 힌트)',
+        messages: [
+          '대마왕이 높이 점프할 때 밑으로 쏙 지나가서 뒤쪽 황금 도끼(Axe)를 찍어볼까? 다리가 무너지면 한 방에 승리야!',
+          '파이어플라워 불꽃(🔥)을 5번 맞히거나, 대마왕이 점프할 때 아래로 통과해 도끼를 터치해 보자! 거의 다 왔어!'
+        ]
+      }
+    };
+
+    /*************************************************************************
+     * Level Generator for Worlds 1-1, 1-2, 1-3, 1-4
+     *************************************************************************/
+    function buildWorldLevel(worldId) {
+      const blocks = [];
+      const enemies = [];
+      const coins = [];
+      const starCoins = [];
+      const springs = [];
+      const movingPlatforms = [];
+      const firebars = [];
+      const decorations = [];
+      let checkpoint = { x: 42 * TILE, y: 9 * TILE, reached: false };
+      let goal = { x: 86 * TILE, y: 3 * TILE, height: 10 * TILE };
+      let boss = null;
+      let axe = null;
+      let bridgeBlocks = [];
+
+      const addGroundRange = (startX, endX, topRow = 13) => {
+        for (let tx = startX; tx <= endX; tx++) {
+          for (let ty = topRow; ty < 15; ty++) {
+            blocks.push({
+              x: tx * TILE,
+              y: ty * TILE,
+              w: TILE,
+              h: TILE,
+              type: ty === topRow ? 'groundTop' : 'ground'
+            });
+          }
+        }
+      };
+
+      const addPipe = (tx, heightTiles = 2, topRow = 13) => {
+        const yTop = (topRow - heightTiles) * TILE;
+        blocks.push({
+          x: tx * TILE,
+          y: yTop,
+          w: TILE * 2,
+          h: heightTiles * TILE,
+          type: 'pipe'
+        });
+      };
+
+      const addQuestion = (tx, ty, content = 'coin') => {
+        blocks.push({
+          x: tx * TILE,
+          y: ty * TILE,
+          w: TILE,
+          h: TILE,
+          type: 'question',
+          content, // 'coin', 'mushroom', 'flower', 'star', 'oneup'
+          hit: false,
+          bumpY: 0
+        });
+      };
+
+      const addBrick = (tx, ty, content = null) => {
+        blocks.push({
+          x: tx * TILE,
+          y: ty * TILE,
+          w: TILE,
+          h: TILE,
+          type: 'brick',
+          content,
+          hit: false,
+          bumpY: 0
+        });
+      };
+
+      const addHardBlock = (tx, ty) => {
+        blocks.push({
+          x: tx * TILE,
+          y: ty * TILE,
+          w: TILE,
+          h: TILE,
+          type: 'hard'
+        });
+      };
+
+      const addCoinArc = (startTx, ty, count = 5) => {
+        for (let i = 0; i < count; i++) {
+          const offset = Math.sin((i / (count - 1)) * Math.PI) * 1.1;
+          coins.push({
+            x: (startTx + i) * TILE + 12,
+            y: (ty - offset) * TILE + 12,
+            w: 24,
+            h: 24,
+            collected: false
+          });
+        }
+      };
+
+      const alreadySavedStars = saveData.starCoins[worldId] || [false, false, false];
+
+      if (worldId === 1) {
+        // ==================== WORLD 1-1: 햇살 초원 (Grassland) ====================
+        addGroundRange(0, 26);
+        addGroundRange(29, 54); // Small pit at 27..28
+        addGroundRange(57, 94); // Small pit at 55..56
+
+        // Question blocks & powerups early
+        addQuestion(8, 9, 'mushroom');
+        addBrick(11, 9);
+        addQuestion(12, 9, 'coin');
+        addBrick(13, 9);
+        addQuestion(14, 9, 'flower');
+        addBrick(15, 9);
+        addQuestion(13, 5, 'coin');
+
+        // Star Coin #1 above the early high platform
+        starCoins.push({
+          index: 0,
+          x: 13 * TILE + 4,
+          y: 3 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[0]
+        });
+
+        addPipe(19, 2);
+        addPipe(24, 3);
+        addCoinArc(20, 9, 4);
+
+        // Second section after first pit
+        addBrick(33, 9);
+        addQuestion(34, 9, 'mushroom');
+        addBrick(35, 9);
+        addBrick(36, 5);
+        addBrick(37, 5);
+        addQuestion(38, 5, 'star'); // Invincible Star!
+
+        // Star Coin #2 guarded by Koopas
+        starCoins.push({
+          index: 1,
+          x: 40 * TILE + 4,
+          y: 4 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[1]
+        });
+
+        // Midpoint Checkpoint Flag at tx=44
+        checkpoint = { x: 44 * TILE, y: 10 * TILE, reached: false };
+
+        addPipe(49, 2);
+        addCoinArc(50, 8, 5);
+
+        // Third section after second pit
+        addBrick(61, 9);
+        addQuestion(62, 9, 'flower');
+        addQuestion(65, 6, 'oneup');
+
+        // Star Coin #3 near the top of the staircase (tx=78, ty=4)
+        starCoins.push({
+          index: 2,
+          x: 78 * TILE + 4,
+          y: 4 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[2]
+        });
+
+        // Classic Mario Staircase to Goal Flag
+        for (let step = 0; step < 6; step++) {
+          for (let h = 0; h <= step; h++) {
+            addHardBlock(75 + step, 12 - h);
+          }
+        }
+
+        goal = { x: 86 * TILE, y: 3 * TILE, height: 10 * TILE };
+
+        // Enemies
+        enemies.push({ type: 'goomba', x: 16 * TILE, y: 11 * TILE, vx: -1.4 });
+        enemies.push({ type: 'goomba', x: 22 * TILE, y: 11 * TILE, vx: -1.4 });
+        enemies.push({ type: 'koopa', x: 37 * TILE, y: 11 * TILE, vx: -1.5 });
+        enemies.push({ type: 'goomba', x: 47 * TILE, y: 11 * TILE, vx: -1.5 });
+        enemies.push({ type: 'koopa', x: 64 * TILE, y: 11 * TILE, vx: -1.6 });
+        enemies.push({ type: 'goomba', x: 70 * TILE, y: 11 * TILE, vx: -1.5 });
+      } else if (worldId === 2) {
+        // ==================== WORLD 1-2: 신비한 지하 동굴 (Underground) ====================
+        addGroundRange(0, 22);
+        addGroundRange(25, 48);
+        addGroundRange(51, 94);
+
+        // Underground brick ceiling with secret upper roof passage (tx 6..42)
+        for (let tx = 4; tx <= 40; tx++) {
+          if (tx < 16 || tx > 20) {
+            addBrick(tx, 2);
+          }
+        }
+
+        addQuestion(7, 9, 'mushroom');
+        addQuestion(10, 9, 'flower');
+
+        // Steps to climb onto the ceiling secret passage
+        addHardBlock(13, 10);
+        addHardBlock(14, 8);
+        addHardBlock(15, 6);
+        addHardBlock(16, 4);
+
+        // Star Coin #1 hidden on top of the ceiling passage!
+        starCoins.push({
+          index: 0,
+          x: 26 * TILE + 4,
+          y: 0.6 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[0]
+        });
+        addCoinArc(21, 1, 5);
+
+        // Lower path blocks
+        addBrick(28, 9);
+        addQuestion(29, 9, 'flower');
+        addBrick(30, 9);
+        addPipe(35, 3);
+
+        // Checkpoint Flag
+        checkpoint = { x: 43 * TILE, y: 10 * TILE, reached: false };
+
+        // Elevated underground ledges
+        for (let tx = 54; tx <= 60; tx++) addBrick(tx, 8);
+        for (let tx = 63; tx <= 69; tx++) addBrick(tx, 5);
+
+        // Star Coin #2 under the second ledge
+        starCoins.push({
+          index: 1,
+          x: 57 * TILE + 4,
+          y: 10 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[1]
+        });
+
+        addQuestion(66, 2, 'oneup');
+        addQuestion(71, 9, 'star');
+
+        // Star Coin #3 high above spring before goal
+        springs.push({ x: 74 * TILE, y: 12 * TILE, w: TILE, h: TILE, compress: 0 });
+        starCoins.push({
+          index: 2,
+          x: 74 * TILE + 4,
+          y: 4 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[2]
+        });
+
+        for (let step = 0; step < 5; step++) {
+          for (let h = 0; h <= step; h++) {
+            addHardBlock(79 + step, 12 - h);
+          }
+        }
+        goal = { x: 88 * TILE, y: 3 * TILE, height: 10 * TILE };
+
+        enemies.push({ type: 'goomba', x: 12 * TILE, y: 11 * TILE, vx: -1.5 });
+        enemies.push({ type: 'koopa', x: 32 * TILE, y: 11 * TILE, vx: -1.6 });
+        enemies.push({ type: 'goomba', x: 39 * TILE, y: 11 * TILE, vx: -1.5 });
+        enemies.push({ type: 'koopa', x: 58 * TILE, y: 6 * TILE, vx: -1.4 });
+        enemies.push({ type: 'goomba', x: 65 * TILE, y: 11 * TILE, vx: -1.6 });
+        enemies.push({ type: 'goomba', x: 68 * TILE, y: 11 * TILE, vx: -1.6 });
+      } else if (worldId === 3) {
+        // ==================== WORLD 1-3: 구름 다리 하늘길 (Athletic Sky) ====================
+        addGroundRange(0, 14);
+        addQuestion(6, 9, 'mushroom');
+        addQuestion(9, 9, 'flower');
+        springs.push({ x: 13 * TILE, y: 12 * TILE, w: TILE, h: TILE, compress: 0 });
+
+        // Cloud Islands & Moving Platforms (Generous widths for 6yo touch play)
+        addGroundRange(17, 25, 10);
+        addCoinArc(18, 7, 5);
+
+        // Star Coin #1 above first sky island
+        starCoins.push({
+          index: 0,
+          x: 21 * TILE + 4,
+          y: 5 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[0]
+        });
+
+        movingPlatforms.push({
+          x: 27 * TILE,
+          y: 10 * TILE,
+          w: TILE * 3.5,
+          h: 24,
+          minX: 26 * TILE,
+          maxX: 33 * TILE,
+          minY: 10 * TILE,
+          maxY: 10 * TILE,
+          vx: 1.8,
+          vy: 0
+        });
+
+        addGroundRange(35, 46, 11);
+        addQuestion(39, 7, 'flower');
+        checkpoint = { x: 42 * TILE, y: 8 * TILE, reached: false };
+
+        // Vertical elevator cloud
+        movingPlatforms.push({
+          x: 48 * TILE,
+          y: 9 * TILE,
+          w: TILE * 3.5,
+          h: 24,
+          minX: 48 * TILE,
+          maxX: 48 * TILE,
+          minY: 5 * TILE,
+          maxY: 11 * TILE,
+          vx: 0,
+          vy: -1.6
+        });
+
+        // Star Coin #2 reachable from vertical cloud elevator
+        starCoins.push({
+          index: 1,
+          x: 49 * TILE + 4,
+          y: 3 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[1]
+        });
+
+        addGroundRange(53, 66, 9);
+        springs.push({ x: 65 * TILE, y: 8 * TILE, w: TILE, h: TILE, compress: 0 });
+        addQuestion(58, 5, 'star');
+
+        // Star Coin #3 high above spring jump
+        starCoins.push({
+          index: 2,
+          x: 68 * TILE + 4,
+          y: 3 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[2]
+        });
+
+        addGroundRange(69, 92, 12);
+        addCoinArc(72, 9, 6);
+
+        for (let step = 0; step < 5; step++) {
+          for (let h = 0; h <= step; h++) {
+            addHardBlock(80 + step, 11 - h);
+          }
+        }
+        goal = { x: 88 * TILE, y: 2 * TILE, height: 10 * TILE };
+
+        enemies.push({ type: 'flykoopa', x: 22 * TILE, y: 7 * TILE, baseY: 7 * TILE, vx: -1.2, phase: 0 });
+        enemies.push({ type: 'goomba', x: 38 * TILE, y: 9 * TILE, vx: -1.4 });
+        enemies.push({ type: 'flykoopa', x: 56 * TILE, y: 6 * TILE, baseY: 6 * TILE, vx: -1.2, phase: 1.5 });
+        enemies.push({ type: 'koopa', x: 75 * TILE, y: 10 * TILE, vx: -1.5 });
+      } else if (worldId === 4) {
+        // ==================== WORLD 1-4: 대마왕 쿠파 성 (Bowser's Castle) ====================
+        addGroundRange(0, 18);
+        addQuestion(6, 9, 'mushroom');
+        addQuestion(9, 9, 'flower');
+
+        // Castle stone ceiling
+        for (let tx = 0; tx <= 95; tx++) {
+          addHardBlock(tx, 0);
+        }
+
+        // Lava bridge 1
+        addGroundRange(21, 36);
+        firebars.push({ x: 28 * TILE + 24, y: 10 * TILE + 24, angle: 0, speed: 0.032, length: 3 });
+
+        // Star Coin #1 above first castle platform (with stepping stone at tx=23, ty=9)
+        addHardBlock(23, 9);
+        addBrick(26, 6);
+        addBrick(27, 6);
+        addBrick(28, 6);
+        starCoins.push({
+          index: 0,
+          x: 27 * TILE + 4,
+          y: 4 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[0]
+        });
+
+        // Moving platform over lava
+        movingPlatforms.push({
+          x: 38 * TILE,
+          y: 11 * TILE,
+          w: TILE * 3.5,
+          h: 24,
+          minX: 37 * TILE,
+          maxX: 43 * TILE,
+          minY: 11 * TILE,
+          maxY: 11 * TILE,
+          vx: 1.6,
+          vy: 0
+        });
+
+        addGroundRange(45, 62);
+        // Checkpoint right before Boss Arena! + Extra Fire Flower supply!
+        checkpoint = { x: 48 * TILE, y: 10 * TILE, reached: false };
+        addQuestion(51, 9, 'mushroom');
+        addQuestion(54, 9, 'flower');
+
+        // Star Coin #2 above checkpoint supply blocks
+        starCoins.push({
+          index: 1,
+          x: 52.5 * TILE,
+          y: 5 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[1]
+        });
+
+        // Boss Arena Approach & High Ledge (helps DK jump over Bowser easily!)
+        addHardBlock(61, 10);
+        for (let tx = 65; tx <= 71; tx++) {
+          addHardBlock(tx, 7);
+        }
+        // Star Coin #3 on the high boss strategy bridge
+        starCoins.push({
+          index: 2,
+          x: 68 * TILE + 4,
+          y: 5 * TILE,
+          w: 40,
+          h: 40,
+          collected: alreadySavedStars[2]
+        });
+
+        // Bowser's Collapsible Bridge (tx 63..78 at row 12)
+        for (let tx = 63; tx <= 78; tx++) {
+          const b = {
+            x: tx * TILE,
+            y: 12 * TILE,
+            w: TILE,
+            h: TILE,
+            type: 'bridge'
+          };
+          blocks.push(b);
+          bridgeBlocks.push(b);
+        }
+
+        // Safe Rear Platform holding the Golden Axe
+        addGroundRange(79, 92);
+
+        axe = {
+          x: 80 * TILE,
+          y: 10 * TILE,
+          w: 52,
+          h: 64,
+          triggered: false
+        };
+
+        boss = {
+          x: 73 * TILE,
+          y: 9 * TILE,
+          w: 84,
+          h: 96,
+          vx: -1.2,
+          vy: 0,
+          hp: 5,
+          maxHp: 5,
+          minX: 64 * TILE,
+          maxX: 76 * TILE,
+          jumpTimer: 90,
+          fireTimer: 130,
+          hurtTimer: 0,
+          alive: true,
+          fallingInLava: false
+        };
+
+        goal = null; // In 1-4, defeating Bowser or touching the Axe clears the game!
+
+        enemies.push({ type: 'goomba', x: 14 * TILE, y: 11 * TILE, vx: -1.4 });
+        enemies.push({ type: 'koopa', x: 33 * TILE, y: 11 * TILE, vx: -1.4 });
+      }
+
+      return {
+        worldId,
+        meta: WORLD_METADATA[worldId],
+        blocks,
+        enemies: enemies.map((e) => ({
+          ...e,
+          w: 42,
+          h: e.type === 'koopa' || e.type === 'flykoopa' ? 50 : 42,
+          vy: 0,
+          alive: true,
+          state: 'walk', // 'walk' | 'shell_idle' | 'shell_slide'
+          shellCooldown: 0,
+          squishTimer: 0
+        })),
+        coins,
+        starCoins,
+        springs,
+        movingPlatforms,
+        firebars,
+        checkpoint,
+        goal,
+        boss,
+        axe,
+        bridgeBlocks
+      };
+    }
+
+    /*************************************************************************
+     * PHASE 1 & 2: Core Physics, Secret Assist (Coyote Time / Jump Buffer),
+     * and Super DK 3-Stage Power-Up State Machine
+     *************************************************************************/
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const GAME_STATE = {
+      TITLE: 'TITLE',
+      PLAYING: 'PLAYING',
+      RESPAWNING: 'RESPAWNING',
+      GAMEOVER: 'GAMEOVER',
+      CLEARED: 'CLEARED'
+    };
+
+    let currentState = GAME_STATE.TITLE;
+    let currentWorldId = saveData.selectedWorld || 1;
+    let level = null;
+
+    // Session stats
+    let lives = 3;
+    let score = 0;
+    let coinCount = 0;
+    let checkpointActive = false;
+    let lastDeathReason = 'pit'; // 'pit' | 'enemy' | 'boss'
+
+    // Player (Super DK) State Machine
+    // power: 0 = Small DK, 1 = Super DK (Mushroom), 2 = Fire DK (Fire Flower)
+    const player = {
+      x: 120,
+      y: 400,
+      w: 38,
+      h: 46,
+      vx: 0,
+      vy: 0,
+      facing: 1,
+      power: 0,
+      invincibleTimer: 0, // Post-damage blinking invulnerability (90 frames = 1.5s)
+      starTimer: 0,       // Super Star rainbow invincibility (600 frames = 10s)
+      onGround: false,
+      coyoteTimer: 0,     // 120ms (~8 frames) Coyote Time after leaving ground
+      jumpBufferTimer: 0, // 150ms (~9 frames) Jump Buffering before landing
+      fireCooldown: 0,
+      animTick: 0
+    };
+
+    // Active dynamic entities
+    let items = [];
+    let fireballs = [];
+    let bossProjectiles = [];
+    let particles = [];
+    let floatingTexts = [];
+    let cameraX = 0;
+
+    // Input Controller (Multi-touch + Keyboard)
+    const keys = {
+      left: false,
+      right: false,
+      jumpHeld: false
+    };
+
+    function triggerJumpInput() {
+      // 150ms Jump Buffering (9 frames at 60fps)
+      player.jumpBufferTimer = 9;
+      keys.jumpHeld = true;
+    }
+
+    function releaseJumpInput() {
+      keys.jumpHeld = false;
+      // Variable jump height: releasing jump early cuts upward velocity
+      if (player.vy < -6) {
+        player.vy *= 0.55;
+      }
+    }
+
+    function triggerFireball() {
+      if (currentState !== GAME_STATE.PLAYING) return;
+      if (player.power !== 2 || player.fireCooldown > 0) return;
+      player.fireCooldown = 18;
+      sfx.fireball();
+      fireballs.push({
+        x: player.facing > 0 ? player.x + player.w + 4 : player.x - 18,
+        y: player.y + player.h * 0.38,
+        w: 16,
+        h: 16,
+        vx: player.facing * 9.2,
+        vy: 3.5,
+        bounces: 0,
+        alive: true
+      });
+    }
+
+    // Keyboard Bindings (for PC testing & Bluetooth keyboard)
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyZ') {
+        e.preventDefault();
+        triggerJumpInput();
+      }
+      if (e.code === 'KeyX' || e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyF') {
+        e.preventDefault();
+        triggerFireball();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyZ') {
+        releaseJumpInput();
+      }
+    });
+
+    // Multi-Touch Ergonomic Pad Handler (Supports D-Pad & Action Cluster Thumb-Sliding)
+    function bindSlideGroup(clusterEl, buttonDefs) {
+      if (!clusterEl) return;
+      const activePointers = new Map(); // pointerId -> active buttonDef or null
+      const activeBtns = new Set();
+
+      const hitTestButton = (clientX, clientY, targetEl) => {
+        if (typeof clientX === 'number' && typeof clientY === 'number') {
+          for (const def of buttonDefs) {
+            if (!def.el || def.el.classList.contains('hidden')) continue;
+            if (typeof def.el.getBoundingClientRect === 'function') {
+              const r = def.el.getBoundingClientRect();
+              const rw = r.width !== undefined ? r.width : (r.right - r.left);
+              const rh = r.height !== undefined ? r.height : (r.bottom - r.top);
+              if (rw > 0 || rh > 0) {
+                const margin = 20; // Forgiving 20px thumb-slide expansion margin
+                if (
+                  clientX >= r.left - margin &&
+                  clientX <= r.right + margin &&
+                  clientY >= r.top - margin &&
+                  clientY <= r.bottom + margin
+                ) {
+                  return def;
+                }
+              }
+            }
+          }
+        }
+        // Fallback when synthetic events omit coordinates or getBoundingClientRect is zero
+        if (targetEl) {
+          for (const def of buttonDefs) {
+            if (def.el && (targetEl === def.el || (def.el.contains && def.el.contains(targetEl)))) {
+              return def;
+            }
+          }
+        }
+        return null;
+      };
+
+      const syncGroupState = () => {
+        const nextActive = new Set();
+        for (const def of activePointers.values()) {
+          if (def) nextActive.add(def);
+        }
+        // Release buttons no longer held
+        for (const def of buttonDefs) {
+          if (activeBtns.has(def) && !nextActive.has(def)) {
+            activeBtns.delete(def);
+            if (def.el) def.el.classList.remove('pressed');
+            def.onUp();
+          }
+        }
+        // Activate newly entered buttons
+        for (const def of buttonDefs) {
+          if (!activeBtns.has(def) && nextActive.has(def)) {
+            activeBtns.add(def);
+            if (def.el) def.el.classList.add('pressed');
+            def.onDown();
+          }
+        }
+      };
+
+      const handlePointerDown = (e) => {
+        e.preventDefault();
+        sfx.init();
+        const pid = e.pointerId !== undefined ? e.pointerId : 'mouse';
+        if (clusterEl.setPointerCapture && e.pointerId !== undefined) {
+          try { clusterEl.setPointerCapture(e.pointerId); } catch (_) {}
+        }
+        const hit = hitTestButton(e.clientX, e.clientY, e.target);
+        activePointers.set(pid, hit);
+        syncGroupState();
+      };
+
+      const handlePointerMove = (e) => {
+        const pid = e.pointerId !== undefined ? e.pointerId : 'mouse';
+        if (!activePointers.has(pid)) return;
+        e.preventDefault();
+        const hit = hitTestButton(e.clientX, e.clientY, e.target);
+        activePointers.set(pid, hit);
+        syncGroupState();
+      };
+
+      const handlePointerEnd = (e) => {
+        const pid = e.pointerId !== undefined ? e.pointerId : 'mouse';
+        if (!activePointers.has(pid)) return;
+        e.preventDefault();
+        activePointers.delete(pid);
+        syncGroupState();
+      };
+
+      clusterEl.addEventListener('pointerdown', handlePointerDown);
+      clusterEl.addEventListener('pointermove', handlePointerMove);
+      clusterEl.addEventListener('pointerup', handlePointerEnd);
+      clusterEl.addEventListener('pointercancel', handlePointerEnd);
+      clusterEl.addEventListener('pointerleave', (e) => {
+        const pid = e.pointerId !== undefined ? e.pointerId : 'mouse';
+        if (!clusterEl.hasPointerCapture || !clusterEl.hasPointerCapture(pid)) {
+          handlePointerEnd(e);
+        }
+      });
+
+      // Also bind directly on child buttons so direct button dispatch in tests or older WebViews works seamlessly
+      for (const def of buttonDefs) {
+        if (!def.el) continue;
+        def.el.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          handlePointerDown(e);
+        });
+        def.el.addEventListener('pointermove', (e) => {
+          e.stopPropagation();
+          handlePointerMove(e);
+        });
+        def.el.addEventListener('pointerup', (e) => {
+          e.stopPropagation();
+          handlePointerEnd(e);
+        });
+        def.el.addEventListener('pointercancel', (e) => {
+          e.stopPropagation();
+          handlePointerEnd(e);
+        });
+      }
+    }
+
+    function setupTouchControls() {
+      const dpadCluster = document.querySelector('.dpad-cluster');
+      const actionCluster = document.querySelector('.action-cluster');
+      const btnLeft = document.getElementById('btnLeft');
+      const btnRight = document.getElementById('btnRight');
+      const btnJump = document.getElementById('btnJump');
+      const btnFire = document.getElementById('btnFire');
+
+      bindSlideGroup(dpadCluster, [
+        { el: btnLeft, onDown: () => { keys.left = true; }, onUp: () => { keys.left = false; } },
+        { el: btnRight, onDown: () => { keys.right = true; }, onUp: () => { keys.right = false; } }
+      ]);
+
+      bindSlideGroup(actionCluster, [
+        { el: btnJump, onDown: () => { triggerJumpInput(); }, onUp: () => { releaseJumpInput(); } },
+        { el: btnFire, onDown: () => { triggerFireball(); }, onUp: () => {} }
+      ]);
+    }
+
+    setupTouchControls();
+
+    /*************************************************************************
+     * Stage Initialization, Checkpoint & Power-Up Helpers
+     *************************************************************************/
+    function setPlayerPower(newPower) {
+      const oldH = player.h;
+      player.power = newPower;
+      player.h = newPower === 0 ? 46 : 66; // Super DK grows 1.5x taller!
+      player.y -= (player.h - oldH);
+
+      const btnFire = document.getElementById('btnFire');
+      if (newPower === 2) {
+        btnFire.classList.remove('hidden');
+      } else {
+        btnFire.classList.add('hidden');
+      }
+      updateHUD();
+    }
+
+    function respawnAtCheckpoint(worldId) {
+      startWorld(worldId, true, true);
+    }
+
+    function startWorld(worldId, useCheckpoint = false, isRespawn = false) {
+      currentWorldId = worldId;
+      saveData.selectedWorld = worldId;
+
+      level = buildWorldLevel(worldId);
+      items = [];
+      fireballs = [];
+      bossProjectiles = [];
+      particles = [];
+      floatingTexts = [];
+
+      const hasSavedCheckpoint = Boolean(saveData.checkpoints && saveData.checkpoints[worldId]);
+      if (useCheckpoint && (checkpointActive || hasSavedCheckpoint)) {
+        checkpointActive = true;
+        level.checkpoint.reached = true;
+        player.x = level.checkpoint.x;
+        player.y = level.checkpoint.y - 70;
+      } else {
+        checkpointActive = false;
+        if (saveData.checkpoints) {
+          saveData.checkpoints[worldId] = false;
+        }
+        player.x = 2.5 * TILE;
+        player.y = 10 * TILE;
+      }
+      saveProgress();
+
+      player.vx = 0;
+      player.vy = 0;
+      player.onGround = false;
+      player.facing = 1;
+      // Grant 1.5s (90 frames at 60Hz) blinking invulnerability when respawning or continuing at a checkpoint!
+      player.invincibleTimer = (isRespawn || (useCheckpoint && checkpointActive)) ? 90 : 0;
+      player.starTimer = 0;
+      player.coyoteTimer = 0;
+      player.jumpBufferTimer = 0;
+      setPlayerPower(player.power);
+
+      cameraX = Math.max(0, player.x - 320);
+      currentState = GAME_STATE.PLAYING;
+      hideAllOverlays();
+      updateHUD();
+      sfx.startBGM(worldId);
+    }
+
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      banner.textContent = msg;
+      banner.classList.add('show');
+      clearTimeout(banner._timer);
+      banner._timer = setTimeout(() => banner.classList.remove('show'), 2200);
+    }
+
+    function spawnFloatingText(x, y, text, color = '#fbd000') {
+      floatingTexts.push({ x, y, text, color, life: 45 });
+    }
+
+    function spawnParticles(x, y, color, count = 10) {
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+        const speed = 2 + Math.random() * 4.5;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2,
+          color,
+          size: 5 + Math.random() * 5,
+          life: 26 + Math.floor(Math.random() * 14)
+        });
+      }
+    }
+
+    function addCoin(count = 1) {
+      coinCount += count;
+      score += count * 100;
+      if (coinCount >= 100) {
+        coinCount -= 100;
+        lives++;
+        sfx.oneUp();
+        showToast('🍄 코인 100개 달성! 1-UP 생명 +1!');
+      } else {
+        sfx.coin();
+      }
+      updateHUD();
+    }
+
+    /*************************************************************************
+     * AABB Collision & Physics Update (60fps Fixed Step Feel)
+     *************************************************************************/
+    function aabb(a, b) {
+      return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+      );
+    }
+
+    function hitBlockFromBelow(b) {
+      b.bumpY = -10;
+      if (b.type === 'question' && !b.hit) {
+        b.hit = true;
+        if (b.content === 'coin') {
+          addCoin(1);
+          spawnFloatingText(b.x + 10, b.y - 12, '+100 🪙');
+        } else {
+          // Progressive powerup: if content is flower but DK is Small, give Mushroom or Flower directly
+          let spawnType = b.content;
+          if (spawnType === 'mushroom' && player.power >= 1) {
+            spawnType = 'flower';
+          }
+          sfx.bump();
+          items.push({
+            type: spawnType,
+            x: b.x + 6,
+            y: b.y - 38,
+            w: 36,
+            h: 36,
+            vx: spawnType === 'flower' ? 0 : 2.1,
+            vy: -4,
+            alive: true
+          });
+        }
+      } else if (b.type === 'brick') {
+        if (player.power >= 1) {
+          // Super DK or Fire DK smashes bricks!
+          sfx.stomp();
+          spawnParticles(b.x + 24, b.y + 24, '#d97706', 12);
+          b.broken = true;
+          score += 50;
+          updateHUD();
+        } else {
+          sfx.bump();
+        }
+      } else {
+        sfx.bump();
+      }
+    }
+
+    function handlePlayerDamage(reason) {
+      if (player.invincibleTimer > 0 || player.starTimer > 0) return;
+
+      if (player.power === 2) {
+        // Fire DK -> Super DK
+        sfx.powerDown();
+        setPlayerPower(1);
+        player.invincibleTimer = 95;
+        showToast('🛡️ 파워 단계 하락! (파이어 DK ➔ 슈퍼 DK)');
+        return;
+      }
+      if (player.power === 1) {
+        // Super DK -> Small DK
+        sfx.powerDown();
+        setPlayerPower(0);
+        player.invincibleTimer = 95;
+        showToast('🛡️ 파워 단계 하락! (슈퍼 DK ➔ 꼬마 DK)');
+        return;
+      }
+
+      // Small DK loses a life
+      loseOneLife(reason);
+    }
+
+    function loseOneLife(reason) {
+      if (currentState !== GAME_STATE.PLAYING) return;
+      lastDeathReason = reason;
+      lives--;
+      player.power = 0;
+      updateHUD();
+
+      if (lives > 0) {
+        sfx.loseLife();
+        currentState = GAME_STATE.RESPAWNING;
+        showToast(`💫 생명 1 차감! 남은 생명: ${lives}개 및 체크포인트에서 바로 부활합니다!`);
+        setTimeout(() => {
+          startWorld(currentWorldId, checkpointActive, true);
+        }, 1100);
+      } else {
+        // Classic Game Over + Gifted Resilience Coaching Modal
+        sfx.gameOver();
+        currentState = GAME_STATE.GAMEOVER;
+        openGameOverModal(reason);
+      }
+    }
+
+    function triggerStageClear() {
+      if (currentState === GAME_STATE.CLEARED) return;
+      currentState = GAME_STATE.CLEARED;
+      sfx.stageClear();
+
+      score += 1000;
+      saveData.clearedWorlds[currentWorldId] = true;
+      if (currentWorldId < 4 && saveData.unlockedWorld < currentWorldId + 1) {
+        saveData.unlockedWorld = currentWorldId + 1;
+      }
+      if (score > saveData.highScore) {
+        saveData.highScore = score;
+      }
+      saveProgress();
+      updateHUD();
+
+      setTimeout(() => {
+        openStageClearModal();
+      }, 950);
+    }
+
+    function updateGame() {
+      if (currentState !== GAME_STATE.PLAYING || !level) return;
+
+      player.animTick++;
+      if (player.invincibleTimer > 0) player.invincibleTimer--;
+      if (player.starTimer > 0) {
+        player.starTimer--;
+        if (player.starTimer % 4 === 0) {
+          spawnParticles(
+            player.x + Math.random() * player.w,
+            player.y + Math.random() * player.h,
+            ['#ff3b30', '#fbd000', '#4ade80', '#38bdf8', '#c084fc'][Math.floor(Math.random() * 5)],
+            2
+          );
+        }
+      }
+      if (player.fireCooldown > 0) player.fireCooldown--;
+
+      // 1. Update Moving Platforms
+      for (const mp of level.movingPlatforms) {
+        mp.x += mp.vx;
+        mp.y += mp.vy;
+        if (mp.vx !== 0 && (mp.x < mp.minX || mp.x > mp.maxX)) mp.vx *= -1;
+        if (mp.vy !== 0 && (mp.y < mp.minY || mp.y > mp.maxY)) mp.vy *= -1;
+      }
+
+      // 2. Horizontal Movement with smooth acceleration & friction
+      const maxSpeed = player.starTimer > 0 ? 6.8 : 5.5;
+      const accel = player.onGround ? 0.65 : 0.42;
+
+      if (keys.left) {
+        player.vx = Math.max(player.vx - accel, -maxSpeed);
+        player.facing = -1;
+      } else if (keys.right) {
+        player.vx = Math.min(player.vx + accel, maxSpeed);
+        player.facing = 1;
+      } else {
+        player.vx *= player.onGround ? 0.8 : 0.92;
+        if (Math.abs(player.vx) < 0.08) player.vx = 0;
+      }
+
+      // 3. Coyote Time (120ms = ~8 frames) & Jump Buffering (150ms = ~9 frames)
+      if (player.onGround) {
+        player.coyoteTimer = 8;
+      } else if (player.coyoteTimer > 0) {
+        player.coyoteTimer--;
+      }
+
+      if (player.jumpBufferTimer > 0) {
+        player.jumpBufferTimer--;
+      }
+
+      if (player.jumpBufferTimer > 0 && player.coyoteTimer > 0) {
+        player.vy = -15.8;
+        player.onGround = false;
+        player.coyoteTimer = 0;
+        player.jumpBufferTimer = 0;
+        sfx.jump(player.power >= 1);
+      }
+
+      // Gravity
+      player.vy = Math.min(player.vy + 0.58, 14);
+
+      // Apply Horizontal Movement & Block Collisions
+      player.x += player.vx;
+      if (player.x < 0) {
+        player.x = 0;
+        player.vx = 0;
+      }
+
+      level.blocks = level.blocks.filter((b) => !b.broken);
+
+      for (const b of level.blocks) {
+        if (b.bumpY < 0) b.bumpY += 2;
+        if (aabb(player, b)) {
+          if (player.vx > 0) {
+            player.x = b.x - player.w;
+            player.vx = 0;
+          } else if (player.vx < 0) {
+            player.x = b.x + b.w;
+            player.vx = 0;
+          }
+        }
+      }
+
+      // Apply Vertical Movement & Block/Platform Collisions
+      player.y += player.vy;
+      player.onGround = false;
+
+      for (const b of level.blocks) {
+        if (aabb(player, b)) {
+          if (player.vy > 0) {
+            player.y = b.y - player.h;
+            player.vy = 0;
+            player.onGround = true;
+          } else if (player.vy < 0) {
+            player.y = b.y + b.h;
+            player.vy = 0;
+            hitBlockFromBelow(b);
+          }
+        }
+      }
+
+      // Moving Platform top landing
+      for (const mp of level.movingPlatforms) {
+        if (
+          player.vy >= 0 &&
+          player.x + player.w > mp.x + 4 &&
+          player.x < mp.x + mp.w - 4 &&
+          player.y + player.h >= mp.y &&
+          player.y + player.h <= mp.y + mp.h + 14
+        ) {
+          player.y = mp.y - player.h;
+          player.vy = 0;
+          player.onGround = true;
+          player.x += mp.vx;
+        }
+      }
+
+      // Springs (Jump Pads)
+      for (const sp of level.springs) {
+        if (sp.compress > 0) sp.compress--;
+        if (aabb(player, sp) && player.vy >= 0) {
+          player.y = sp.y - player.h;
+          player.vy = -18.2; // Super high bounce!
+          player.onGround = false;
+          sp.compress = 14;
+          sfx.jump(true);
+          spawnFloatingText(sp.x, sp.y - 16, 'BOING! 🚀', '#4ade80');
+        }
+      }
+
+      // Check Pit / Lava Fall (Y > 740)
+      if (player.y > 740) {
+        loseOneLife('pit');
+        return;
+      }
+
+      // 4. Coins & Star Coins Collection
+      for (const c of level.coins) {
+        if (!c.collected && aabb(player, c)) {
+          c.collected = true;
+          addCoin(1);
+        }
+      }
+
+      for (const sc of level.starCoins) {
+        if (!sc.collected && aabb(player, sc)) {
+          sc.collected = true;
+          saveData.starCoins[currentWorldId][sc.index] = true;
+          saveProgress();
+          score += 1000;
+          sfx.starCoin();
+          spawnParticles(sc.x + 20, sc.y + 20, '#fbd000', 18);
+          spawnFloatingText(sc.x, sc.y - 10, `★ 스타코인 #${sc.index + 1} 획득!`, '#ffe033');
+          updateHUD();
+        }
+      }
+
+      // 5. Checkpoint Flag
+      if (level.checkpoint && !level.checkpoint.reached) {
+        if (player.x + player.w >= level.checkpoint.x) {
+          level.checkpoint.reached = true;
+          checkpointActive = true;
+          if (!saveData.checkpoints) saveData.checkpoints = { 1: false, 2: false, 3: false, 4: false };
+          saveData.checkpoints[currentWorldId] = true;
+          saveProgress();
+          sfx.checkpoint();
+          if (player.power === 0) {
+            setPlayerPower(1); // Bonus Mushroom boost at checkpoint if Small!
+          }
+          showToast('🚩 중간 체크포인트 저장! 이어하기 위치가 업데이트되었어요!');
+        }
+      }
+
+      // 6. Goal Flagpole (Worlds 1-1, 1-2, 1-3)
+      if (level.goal && player.x + player.w >= level.goal.x) {
+        spawnParticles(level.goal.x, player.y, '#fbd000', 25);
+        triggerStageClear();
+        return;
+      }
+
+      // 7. Power-up Items Update
+      for (const it of items) {
+        if (!it.alive) continue;
+        if (it.type !== 'flower') {
+          it.vy = Math.min(it.vy + 0.5, 10);
+          it.x += it.vx;
+          for (const b of level.blocks) {
+            if (aabb(it, b)) {
+              if (it.vx > 0) it.x = b.x - it.w;
+              else it.x = b.x + b.w;
+              it.vx *= -1;
+            }
+          }
+          it.y += it.vy;
+          for (const b of level.blocks) {
+            if (aabb(it, b)) {
+              if (it.vy > 0) {
+                it.y = b.y - it.h;
+                it.vy = it.type === 'star' ? -8.5 : 0;
+              }
+            }
+          }
+        }
+
+        if (aabb(player, it)) {
+          it.alive = false;
+          score += 500;
+          if (it.type === 'mushroom') {
+            sfx.powerUp();
+            if (player.power < 1) setPlayerPower(1);
+            spawnFloatingText(player.x, player.y - 15, '🍄 슈퍼 DK 거대화!', '#ff6b6b');
+          } else if (it.type === 'flower') {
+            sfx.powerUp();
+            setPlayerPower(2);
+            spawnFloatingText(player.x, player.y - 15, '🔥 파이어 DK 변신!', '#fb923c');
+          } else if (it.type === 'star') {
+            sfx.powerUp();
+            player.starTimer = 600; // 10 seconds invincible!
+            spawnFloatingText(player.x, player.y - 15, '⭐ 10초 무적 스타!', '#fde047');
+          } else if (it.type === 'oneup') {
+            lives++;
+            sfx.oneUp();
+            spawnFloatingText(player.x, player.y - 15, '💚 1-UP 생명 +1!', '#4ade80');
+          }
+          updateHUD();
+        }
+      }
+
+      // 8. Player Fireballs Update
+      for (const fb of fireballs) {
+        if (!fb.alive) continue;
+        fb.x += fb.vx;
+        fb.vy += 0.45;
+        fb.y += fb.vy;
+
+        for (const b of level.blocks) {
+          if (aabb(fb, b)) {
+            if (fb.y + fb.h - fb.vy <= b.y + 8) {
+              fb.y = b.y - fb.h;
+              fb.vy = -6.5;
+              fb.bounces++;
+            } else {
+              fb.alive = false;
+              spawnParticles(fb.x, fb.y, '#fb923c', 6);
+            }
+          }
+        }
+        if (fb.bounces > 4 || fb.x > cameraX + 1350 || fb.x < cameraX - 100 || fb.y > 740) {
+          fb.alive = false;
+        }
+      }
+
+      // 9. Enemies Update, Koopa Shell Physics & Forgiving Hitbox (120% Stomp / 75% Side Hurt)
+      for (const en of level.enemies) {
+        if (!en.alive) {
+          if (en.squishTimer > 0) en.squishTimer--;
+          continue;
+        }
+
+        if (en.shellCooldown > 0) en.shellCooldown--;
+
+        if (en.type === 'flykoopa') {
+          en.phase += 0.05;
+          en.y = en.baseY + Math.sin(en.phase) * 42;
+          en.x += en.vx * 0.5;
+          if (en.x < 12 * TILE || en.x > 84 * TILE) en.vx *= -1;
+        } else {
+          en.vy = Math.min(en.vy + 0.55, 11);
+          en.x += en.vx;
+          if (en.x < 0) {
+            en.x = 0;
+            en.vx *= -1;
+          }
+          for (const b of level.blocks) {
+            if (aabb(en, b)) {
+              if (en.vx > 0) en.x = b.x - en.w;
+              else en.x = b.x + b.w;
+              en.vx *= -1;
+              if (en.state === 'shell_slide') {
+                sfx.bump();
+                spawnParticles(en.x + en.w / 2, en.y + en.h / 2, '#fde047', 4);
+              }
+            }
+          }
+          en.y += en.vy;
+          let enOnGround = false;
+          for (const b of level.blocks) {
+            if (aabb(en, b) && en.vy > 0) {
+              en.y = b.y - en.h;
+              en.vy = 0;
+              enOnGround = true;
+            }
+          }
+          // Ledge detection: walking enemies turn around at platform edges, while sliding shells fly off ledges!
+          if (enOnGround && en.state !== 'shell_slide' && en.state !== 'shell_idle') {
+            const probeX = en.vx > 0 ? en.x + en.w + 4 : en.x - 4;
+            const probeY = en.y + en.h + 6;
+            const hasFloorAhead = level.blocks.some(
+              (b) => !b.broken && probeX >= b.x && probeX <= b.x + b.w && probeY >= b.y && probeY <= b.y + b.h
+            );
+            if (!hasFloorAhead) {
+              en.vx *= -1;
+            }
+          }
+          if (en.y > 760) {
+            en.alive = false;
+            continue;
+          }
+        }
+
+        // Sliding Koopa Shell knocks out other enemies in its path!
+        if (en.state === 'shell_slide') {
+          for (const other of level.enemies) {
+            if (other !== en && other.alive && aabb(en, other)) {
+              const bothSliding = other.state === 'shell_slide';
+              other.alive = false;
+              other.squishTimer = 20;
+              sfx.kick();
+              score += 300;
+              spawnParticles(other.x + 20, other.y + 20, '#4ade80', 12);
+              spawnFloatingText(other.x, other.y - 10, 'SHELL KO! +300', '#4ade80');
+              if (bothSliding) {
+                en.alive = false;
+                en.squishTimer = 20;
+                score += 300;
+                updateHUD();
+                break;
+              }
+              updateHUD();
+            }
+          }
+        }
+
+        // Fireball hits enemy
+        for (const fb of fireballs) {
+          if (fb.alive && aabb(fb, en)) {
+            fb.alive = false;
+            en.alive = false;
+            sfx.stomp();
+            score += 200;
+            spawnParticles(en.x + 20, en.y + 20, '#fb923c', 10);
+            spawnFloatingText(en.x, en.y, '+200 🔥');
+            updateHUD();
+          }
+        }
+
+        if (!en.alive) continue;
+
+        // Star invincibility instant defeat
+        if (player.starTimer > 0 && aabb(player, en)) {
+          en.alive = false;
+          sfx.stomp();
+          score += 200;
+          spawnParticles(en.x + 20, en.y + 20, '#fde047', 12);
+          spawnFloatingText(en.x, en.y, 'STAR KO! +200');
+          updateHUD();
+          continue;
+        }
+
+        // Forgiving Stomp Check (120% width top zone)
+        const stompBox = {
+          x: en.x - en.w * 0.1,
+          y: en.y - 10,
+          w: en.w * 1.2,
+          h: en.h * 0.55
+        };
+
+        if (player.vy > 0 && aabb(player, stompBox)) {
+          player.vy = -10.8; // Bounce!
+          if (en.type === 'flykoopa') {
+            // Winged Koopa loses wings and becomes a normal walking Koopa
+            en.type = 'koopa';
+            en.state = 'walk';
+            en.shellState = null;
+            en.vx = -1.5;
+            en.shellCooldown = 12;
+            sfx.stomp();
+            score += 200;
+            spawnFloatingText(en.x, en.y - 10, '날개 해제! +200');
+          } else if (en.type === 'koopa') {
+            if (en.state === 'walk' || !en.state) {
+              // Walking Koopa retreats into stationary shell (shell_idle)
+              en.state = 'shell_idle';
+              en.shellState = 'shell_idle';
+              en.vx = 0;
+              en.y += en.h - 38;
+              en.h = 38;
+              en.shellCooldown = 14;
+              sfx.stomp();
+              score += 200;
+              spawnFloatingText(en.x, en.y - 10, '등껍질! 🐢 +200');
+            } else if (en.state === 'shell_idle') {
+              // Stomping an idle shell kicks it into a high-speed slide!
+              en.state = 'shell_slide';
+              en.shellState = 'shell_slide';
+              const kickDir = player.x + player.w / 2 <= en.x + en.w / 2 ? 1 : -1;
+              en.vx = kickDir * 8.6;
+              en.shellCooldown = 14;
+              sfx.kick();
+              score += 200;
+              spawnFloatingText(en.x, en.y - 10, '등껍질 슛! 💨 +200');
+            } else if (en.state === 'shell_slide') {
+              // Stomping a sliding shell stops it back to shell_idle
+              en.state = 'shell_idle';
+              en.shellState = 'shell_idle';
+              en.vx = 0;
+              en.shellCooldown = 14;
+              sfx.stomp();
+              score += 100;
+              spawnFloatingText(en.x, en.y - 10, '스톱! +100');
+            }
+          } else {
+            // Goomba squishes flat
+            en.alive = false;
+            en.squishTimer = 25;
+            sfx.stomp();
+            score += 200;
+            spawnFloatingText(en.x, en.y - 10, '+200 콩!');
+          }
+          updateHUD();
+          continue;
+        }
+
+        // Side contact with idle Koopa shell kicks it without hurting DK!
+        if (en.type === 'koopa' && en.state === 'shell_idle' && en.shellCooldown <= 0 && aabb(player, en)) {
+          en.state = 'shell_slide';
+          en.shellState = 'shell_slide';
+          const kickDir = player.x + player.w / 2 <= en.x + en.w / 2 ? 1 : -1;
+          en.vx = kickDir * 8.6;
+          en.shellCooldown = 14;
+          sfx.kick();
+          score += 200;
+          spawnFloatingText(en.x, en.y - 10, '등껍질 슛! 💨 +200', '#4ade80');
+          updateHUD();
+          continue;
+        }
+
+        // Forgiving Body Hurt Check (75% inner core box)
+        const hurtBox = {
+          x: en.x + en.w * 0.125,
+          y: en.y + en.h * 0.2,
+          w: en.w * 0.75,
+          h: en.h * 0.75
+        };
+
+        if (en.shellCooldown <= 0 && aabb(player, hurtBox)) {
+          handlePlayerDamage('enemy');
+        }
+      }
+
+      // 10. Castle Firebars (World 1-4)
+      for (const fb of level.firebars) {
+        fb.angle += fb.speed;
+        for (let i = 1; i <= fb.length; i++) {
+          const bx = fb.x + Math.cos(fb.angle) * (i * 22) - 8;
+          const by = fb.y + Math.sin(fb.angle) * (i * 22) - 8;
+          if (aabb(player, { x: bx, y: by, w: 16, h: 16 })) {
+            handlePlayerDamage('enemy');
+          }
+        }
+      }
+
+      // 11. World 1-4 Boss: King Bowser & Golden Axe
+      if (level.axe && !level.axe.triggered && aabb(player, level.axe)) {
+        level.axe.triggered = true;
+        sfx.stageClear();
+        showToast('🪓 황금 도끼 작동! 쿠파의 다리가 무너집니다!');
+        // Collapse bridge blocks sequentially
+        level.bridgeBlocks.forEach((bb, idx) => {
+          setTimeout(() => {
+            bb.broken = true;
+            sfx.bump();
+            spawnParticles(bb.x + 24, bb.y + 24, '#ef4444', 6);
+          }, idx * 45);
+        });
+        if (level.boss && level.boss.alive) {
+          level.boss.fallingInLava = true;
+        }
+        setTimeout(() => {
+          triggerStageClear();
+        }, 1100);
+      }
+
+      if (level.boss && level.boss.alive) {
+        const boss = level.boss;
+        if (boss.hurtTimer > 0) boss.hurtTimer--;
+
+        if (boss.fallingInLava) {
+          boss.y += 7;
+          if (boss.y > 760) boss.alive = false;
+        } else {
+          // Patrol back and forth on the bridge
+          boss.x += boss.vx;
+          if (boss.x < boss.minX || boss.x > boss.maxX) boss.vx *= -1;
+
+          // Periodic High Jump (allows DK to run underneath Bowser to touch the Axe!)
+          boss.jumpTimer--;
+          if (boss.jumpTimer <= 0 && boss.vy === 0) {
+            boss.vy = -12.5;
+            boss.jumpTimer = 115;
+          }
+
+          boss.vy = Math.min(boss.vy + 0.42, 10);
+          boss.y += boss.vy;
+
+          for (const b of level.blocks) {
+            if (!b.broken && aabb(boss, b) && boss.vy > 0) {
+              boss.y = b.y - boss.h;
+              boss.vy = 0;
+            }
+          }
+
+          // Boss Fire Breath
+          boss.fireTimer--;
+          if (boss.fireTimer <= 0 && Math.abs(player.x - boss.x) < 680) {
+            boss.fireTimer = 135;
+            sfx.fireball();
+            bossProjectiles.push({
+              x: boss.x - 24,
+              y: boss.y + 34,
+              w: 34,
+              h: 20,
+              vx: -4.8,
+              alive: true
+            });
+          }
+
+          // Fireballs hitting Bowser (5 hits to defeat!)
+          for (const fb of fireballs) {
+            if (fb.alive && aabb(fb, boss)) {
+              fb.alive = false;
+              boss.hp--;
+              boss.hurtTimer = 18;
+              sfx.bossHit();
+              spawnParticles(fb.x, fb.y, '#fde047', 10);
+              spawnFloatingText(boss.x + 10, boss.y - 16, `💥 쿠파 HP ${boss.hp}/${boss.maxHp}`, '#ff6b6b');
+              if (boss.hp <= 0) {
+                boss.alive = false;
+                score += 5000;
+                spawnParticles(boss.x + 40, boss.y + 40, '#fbd000', 30);
+                showToast('👑 대마왕 쿠파 격파! 슈퍼 DK 대승리!');
+                triggerStageClear();
+              }
+            }
+          }
+
+          // Sliding Koopa Shells hitting Bowser (deals 2 HP damage and bounces off!)
+          for (const en of level.enemies) {
+            if (en.alive && en.state === 'shell_slide' && aabb(en, boss)) {
+              en.alive = false;
+              boss.hp = Math.max(0, boss.hp - 2);
+              boss.hurtTimer = 22;
+              sfx.bossHit();
+              spawnParticles(en.x + 20, en.y + 20, '#4ade80', 14);
+              spawnFloatingText(boss.x + 10, boss.y - 16, `🐢 등껍질 강타! HP ${boss.hp}/${boss.maxHp}`, '#4ade80');
+              if (boss.hp <= 0) {
+                boss.alive = false;
+                score += 5000;
+                spawnParticles(boss.x + 40, boss.y + 40, '#fbd000', 30);
+                showToast('👑 대마왕 쿠파 격파! 슈퍼 DK 대승리!');
+                triggerStageClear();
+              }
+            }
+          }
+
+          // Boss contact with DK (forgiving inner box)
+          const bossHurtBox = {
+            x: boss.x + 14,
+            y: boss.y + 14,
+            w: boss.w - 28,
+            h: boss.h - 20
+          };
+          if (aabb(player, bossHurtBox)) {
+            if (player.starTimer > 0) {
+              boss.hp = 0;
+              boss.alive = false;
+              triggerStageClear();
+            } else {
+              handlePlayerDamage('boss');
+            }
+          }
+        }
+      }
+
+      // Update Boss Fire Breath Projectiles
+      for (const bp of bossProjectiles) {
+        if (!bp.alive) continue;
+        bp.x += bp.vx;
+        if (aabb(player, bp)) {
+          bp.alive = false;
+          handlePlayerDamage('boss');
+        }
+        if (bp.x < cameraX - 100) bp.alive = false;
+      }
+
+      // Update Particles & Floating Texts
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.25;
+        p.life--;
+      }
+      particles = particles.filter((p) => p.life > 0);
+
+      for (const ft of floatingTexts) {
+        ft.y -= 1.2;
+        ft.life--;
+      }
+      floatingTexts = floatingTexts.filter((ft) => ft.life > 0);
+
+      // Smooth Camera Follow
+      const targetCamX = Math.max(0, Math.min(player.x - 360, 94 * TILE - canvas.width));
+      cameraX += (targetCamX - cameraX) * 0.14;
+    }
+
+    /*************************************************************************
+     * PHASE 2 & 3: Procedural Vector/Pixel Rendering (Zero Broken Images)
+     *************************************************************************/
+    function renderGame() {
+      if (!level) return;
+      const meta = level.meta;
+
+      // 1. Sky / Background Gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      skyGrad.addColorStop(0, meta.skyTop);
+      skyGrad.addColorStop(1, meta.skyBottom);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Parallax Clouds & Distant Hills
+      ctx.save();
+      for (let i = 0; i < 14; i++) {
+        const cx = ((i * 340 - cameraX * 0.25) % 4600 + 4600) % 4600 - 200;
+        const cy = 90 + (i % 3) * 55;
+        if (currentWorldId === 2) {
+          // Glowing crystals in underground cavern
+          ctx.fillStyle = 'rgba(96, 165, 250, 0.18)';
+          ctx.beginPath();
+          ctx.moveTo(cx, cy + 40);
+          ctx.lineTo(cx + 25, cy - 20);
+          ctx.lineTo(cx + 50, cy + 40);
+          ctx.fill();
+        } else if (currentWorldId === 4) {
+          // Castle stone pillars in background
+          ctx.fillStyle = 'rgba(255, 60, 40, 0.08)';
+          ctx.fillRect(cx, 60, 70, 560);
+        } else {
+          // Fluffy clouds
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+          ctx.arc(cx + 26, cy - 10, 34, 0, Math.PI * 2);
+          ctx.arc(cx + 56, cy, 26, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+
+      // World 1-3 & 1-4 Pit/Lava Visual Indicator at bottom
+      if (currentWorldId === 4) {
+        const lavaGrad = ctx.createLinearGradient(0, 650, 0, 720);
+        lavaGrad.addColorStop(0, '#ff4500');
+        lavaGrad.addColorStop(1, '#990000');
+        ctx.fillStyle = lavaGrad;
+        ctx.fillRect(0, 655, canvas.width, 65);
+      }
+
+      ctx.save();
+      ctx.translate(-Math.floor(cameraX), 0);
+
+      // 2. Render Tiles & Blocks
+      for (const b of level.blocks) {
+        if (b.broken) continue;
+        if (b.x + b.w < cameraX - 60 || b.x > cameraX + canvas.width + 60) continue;
+
+        const by = b.y + (b.bumpY || 0);
+
+        if (b.type === 'groundTop' || b.type === 'ground') {
+          ctx.fillStyle = meta.groundColor;
+          ctx.fillRect(b.x, by, b.w, b.h);
+          ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(b.x + 1, by + 1, b.w - 2, b.h - 2);
+          if (b.type === 'groundTop') {
+            ctx.fillStyle = meta.grassColor;
+            ctx.fillRect(b.x, by, b.w, 12);
+          }
+        } else if (b.type === 'brick') {
+          ctx.fillStyle = currentWorldId === 2 ? '#1e40af' : '#b45309';
+          ctx.fillRect(b.x, by, b.w, b.h);
+          ctx.strokeStyle = '#1e1b18';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(b.x + 1, by + 1, b.w - 2, b.h - 2);
+          ctx.beginPath();
+          ctx.moveTo(b.x, by + 24);
+          ctx.lineTo(b.x + b.w, by + 24);
+          ctx.moveTo(b.x + 24, by);
+          ctx.lineTo(b.x + 24, by + 24);
+          ctx.stroke();
+        } else if (b.type === 'question') {
+          ctx.fillStyle = b.hit ? '#78716c' : '#fbd000';
+          ctx.fillRect(b.x, by, b.w, b.h);
+          ctx.strokeStyle = '#451a03';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(b.x + 1.5, by + 1.5, b.w - 3, b.h - 3);
+          if (!b.hit) {
+            ctx.fillStyle = '#7c2d12';
+            ctx.font = '900 26px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('?', b.x + 24, by + 34);
+          }
+        } else if (b.type === 'hard' || b.type === 'bridge') {
+          ctx.fillStyle = b.type === 'bridge' ? '#dc2626' : '#64748b';
+          ctx.fillRect(b.x, by, b.w, b.h);
+          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(b.x + 1, by + 1, b.w - 2, b.h - 2);
+        } else if (b.type === 'pipe') {
+          const pipeGrad = ctx.createLinearGradient(b.x, by, b.x + b.w, by);
+          pipeGrad.addColorStop(0, '#15803d');
+          pipeGrad.addColorStop(0.35, '#4ade80');
+          pipeGrad.addColorStop(1, '#14532d');
+          ctx.fillStyle = pipeGrad;
+          ctx.fillRect(b.x + 4, by + 20, b.w - 8, b.h - 20);
+          ctx.fillRect(b.x, by, b.w, 22);
+          ctx.strokeStyle = '#052e16';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(b.x, by, b.w, 22);
+          ctx.strokeRect(b.x + 4, by + 20, b.w - 8, b.h - 20);
+        }
+      }
+
+      // 3. Moving Cloud/Castle Platforms
+      for (const mp of level.movingPlatforms) {
+        ctx.fillStyle = '#fef08a';
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(mp.x, mp.y, mp.w, mp.h, 12);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // 4. Springs
+      for (const sp of level.springs) {
+        const comp = sp.compress;
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(sp.x + 4, sp.y + comp, sp.w - 8, 12);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(sp.x + 10, sp.y + 12 + comp);
+        ctx.lineTo(sp.x + sp.w - 10, sp.y + 28);
+        ctx.lineTo(sp.x + 10, sp.y + 42);
+        ctx.stroke();
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(sp.x + 4, sp.y + 40, sp.w - 8, 8);
+      }
+
+      // 5. Checkpoint Flag
+      if (level.checkpoint) {
+        const cp = level.checkpoint;
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(cp.x, cp.y - 60, 6, 108);
+        ctx.fillStyle = cp.reached ? '#22c55e' : '#f97316';
+        ctx.beginPath();
+        ctx.moveTo(cp.x + 6, cp.y - 60);
+        ctx.lineTo(cp.x + 64, cp.y - 38);
+        ctx.lineTo(cp.x + 6, cp.y - 16);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('DK', cp.x + 26, cp.y - 33);
+      }
+
+      // 6. Goal Flagpole (Worlds 1-1..1-3)
+      if (level.goal) {
+        const g = level.goal;
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(g.x, g.y, 10, g.height);
+        ctx.beginPath();
+        ctx.arc(g.x + 5, g.y, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#e52521';
+        ctx.beginPath();
+        ctx.moveTo(g.x + 10, g.y + 18);
+        ctx.lineTo(g.x + 92, g.y + 48);
+        ctx.lineTo(g.x + 10, g.y + 78);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('GOAL!', g.x + 44, g.y + 54);
+      }
+
+      // 7. Golden Axe (World 1-4)
+      if (level.axe && !level.axe.triggered) {
+        const ax = level.axe;
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(ax.x + 20, ax.y + 16, 10, 48);
+        ctx.fillStyle = '#fbd000';
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(ax.x + 25, ax.y + 20, 22, -Math.PI * 0.7, Math.PI * 0.7);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // 8. Coins & Star Coins
+      const pulse = Math.sin(player.animTick * 0.1) * 3;
+      for (const c of level.coins) {
+        if (c.collected) continue;
+        ctx.fillStyle = '#fbd000';
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(c.x + 12, c.y + 12, 10, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      for (const sc of level.starCoins) {
+        if (sc.collected) continue;
+        ctx.save();
+        ctx.translate(sc.x + 20, sc.y + 20 + pulse);
+        ctx.fillStyle = '#ffe033';
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 21, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#92400e';
+        ctx.font = '900 22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('★', 0, 1);
+        ctx.restore();
+      }
+
+      // 9. Power-Up Items
+      for (const it of items) {
+        if (!it.alive) continue;
+        ctx.save();
+        ctx.translate(it.x + 18, it.y + 18);
+        if (it.type === 'mushroom' || it.type === 'oneup') {
+          ctx.fillStyle = it.type === 'oneup' ? '#22c55e' : '#ef4444';
+          ctx.beginPath();
+          ctx.arc(0, -2, 17, Math.PI, 0);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(-7, -9, 4, 0, Math.PI * 2);
+          ctx.arc(7, -9, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fde68a';
+          ctx.fillRect(-10, -2, 20, 16);
+        } else if (it.type === 'flower') {
+          ctx.fillStyle = '#fb923c';
+          ctx.beginPath();
+          ctx.arc(0, -4, 15, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(0, -4, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(-3, 10, 6, 10);
+        } else if (it.type === 'star') {
+          ctx.fillStyle = '#fde047';
+          ctx.font = '900 34px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('⭐', 0, 0);
+        }
+        ctx.restore();
+      }
+
+      // 10. Enemies (Goomba, Koopa, Flying Koopa)
+      for (const en of level.enemies) {
+        if (!en.alive && en.squishTimer <= 0) continue;
+        ctx.save();
+        const ey = en.alive ? en.y : en.y + 22;
+        const eh = en.alive ? en.h : 18;
+        if (en.type === 'goomba') {
+          ctx.fillStyle = '#92400e';
+          ctx.beginPath();
+          ctx.roundRect(en.x, ey, en.w, eh, 14);
+          ctx.fill();
+          ctx.fillStyle = '#fef3c7';
+          ctx.fillRect(en.x + 10, ey + eh - 12, en.w - 20, 10);
+          // Eyes
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(en.x + 8, ey + 10, 7, 10);
+          ctx.fillRect(en.x + 26, ey + 10, 7, 10);
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(en.x + 10, ey + 13, 4, 6);
+          ctx.fillRect(en.x + 28, ey + 13, 4, 6);
+        } else if (en.state === 'shell_idle' || en.state === 'shell_slide') {
+          // Koopa Shell (Idle or High-Speed Sliding)
+          ctx.fillStyle = '#16a34a';
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(en.x + 3, ey + 4, en.w - 6, eh - 4, 16);
+          ctx.fill();
+          ctx.stroke();
+          // Shell hexagon ridge lines
+          ctx.strokeStyle = '#14532d';
+          ctx.lineWidth = 2;
+          const spinOffset = en.state === 'shell_slide' ? (player.animTick * 4) % 14 : 0;
+          ctx.beginPath();
+          ctx.moveTo(en.x + 12 + spinOffset * 0.5, ey + 8);
+          ctx.lineTo(en.x + 12 + spinOffset * 0.5, ey + eh - 4);
+          ctx.moveTo(en.x + 26 - spinOffset * 0.5, ey + 8);
+          ctx.lineTo(en.x + 26 - spinOffset * 0.5, ey + eh - 4);
+          ctx.stroke();
+        } else {
+          // Koopa / Flykoopa
+          ctx.fillStyle = en.type === 'flykoopa' ? '#ef4444' : '#16a34a';
+          ctx.beginPath();
+          ctx.roundRect(en.x + 4, ey + 12, en.w - 8, eh - 12, 14);
+          ctx.fill();
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath();
+          ctx.arc(en.x + (en.vx < 0 ? 8 : en.w - 8), ey + 14, 11, 0, Math.PI * 2);
+          ctx.fill();
+          if (en.type === 'flykoopa') {
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(en.x + 22, ey + 8, 12, 6, -0.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+
+      // 11. Castle Firebars
+      for (const fb of level.firebars) {
+        for (let i = 0; i <= fb.length; i++) {
+          const bx = fb.x + Math.cos(fb.angle) * (i * 22);
+          const by = fb.y + Math.sin(fb.angle) * (i * 22);
+          ctx.fillStyle = i % 2 === 0 ? '#f97316' : '#fde047';
+          ctx.beginPath();
+          ctx.arc(bx, by, 9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 12. Boss: King Bowser (World 1-4)
+      if (level.boss && level.boss.alive) {
+        const b = level.boss;
+        ctx.save();
+        if (b.hurtTimer > 0 && b.hurtTimer % 2 === 0) {
+          ctx.globalAlpha = 0.5;
+        }
+        // Shell & Body
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.roundRect(b.x + 10, b.y + 16, b.w - 14, b.h - 16, 18);
+        ctx.fill();
+        // Red Hair & Horns
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.arc(b.x + 26, b.y + 18, 22, 0, Math.PI * 2);
+        ctx.fill();
+        // Face
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.roundRect(b.x, b.y + 20, 42, 34, 10);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(b.x + 8, b.y + 26, 10, 10);
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(b.x + 10, b.y + 28, 6, 6);
+
+        // Boss HP Bar above Bowser
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(b.x, b.y - 18, b.w, 10);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(b.x + 2, b.y - 16, ((b.w - 4) * b.hp) / b.maxHp, 6);
+        ctx.restore();
+      }
+
+      // Boss Fire Breath Projectiles
+      for (const bp of bossProjectiles) {
+        if (!bp.alive) continue;
+        ctx.fillStyle = '#ff4500';
+        ctx.beginPath();
+        ctx.ellipse(bp.x + 17, bp.y + 10, 17, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath();
+        ctx.ellipse(bp.x + 20, bp.y + 10, 10, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 13. Player Fireballs
+      for (const fb of fireballs) {
+        if (!fb.alive) continue;
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.arc(fb.x + 8, fb.y + 8, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(fb.x + 8, fb.y + 8, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 14. Render Hero: SUPER DK (Small / Super / Fire + Rainbow Star)
+      drawSuperDK();
+
+      // 15. Particles & Floating Score Texts
+      for (const p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      }
+
+      for (const ft of floatingTexts) {
+        ctx.fillStyle = ft.color;
+        ctx.font = '900 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x, ft.y);
+      }
+
+      ctx.restore();
+    }
+
+    function drawSuperDK() {
+      if (player.invincibleTimer > 0 && Math.floor(player.invincibleTimer / 3) % 2 === 1) {
+        return; // Damage blink
+      }
+
+      ctx.save();
+      ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
+      ctx.scale(player.facing, 1);
+
+      const w = player.w;
+      const h = player.h;
+
+      // Determine Costume Colors based on Power State (Small / Super / Fire / Star)
+      let capColor = '#e52521';
+      let shirtColor = '#e52521';
+      let overallColor = '#1d4ed8';
+
+      if (player.starTimer > 0) {
+        const rainbow = ['#ff3b30', '#fbd000', '#22c55e', '#38bdf8', '#a855f7'];
+        capColor = rainbow[Math.floor(player.animTick / 3) % rainbow.length];
+        shirtColor = '#ffffff';
+        overallColor = rainbow[(Math.floor(player.animTick / 3) + 2) % rainbow.length];
+      } else if (player.power === 2) {
+        // Fire DK: White cap & shirt, glowing red overalls!
+        capColor = '#ffffff';
+        shirtColor = '#ffffff';
+        overallColor = '#dc2626';
+      }
+
+      // Boots
+      const walkSwing = player.onGround && Math.abs(player.vx) > 0.2 ? Math.sin(player.animTick * 0.35) * 5 : 0;
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(-w / 2 + 2 + walkSwing, h / 2 - 10, 14, 10);
+      ctx.fillRect(w / 2 - 16 - walkSwing, h / 2 - 10, 14, 10);
+
+      // Overalls & Shirt
+      ctx.fillStyle = shirtColor;
+      ctx.beginPath();
+      ctx.roundRect(-w / 2 + 2, -h / 2 + 18, w - 4, h - 26, 8);
+      ctx.fill();
+
+      ctx.fillStyle = overallColor;
+      ctx.beginPath();
+      ctx.roundRect(-w / 2 + 5, -2, w - 10, h / 2 - 6, 6);
+      ctx.fill();
+
+      // Golden Buttons
+      ctx.fillStyle = '#fbd000';
+      ctx.beginPath();
+      ctx.arc(-5, 6, 3, 0, Math.PI * 2);
+      ctx.arc(7, 6, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head & Cheerful Face
+      ctx.fillStyle = '#ffcca3';
+      ctx.beginPath();
+      ctx.roundRect(-w / 2 + 3, -h / 2 + 6, w - 6, 22, 9);
+      ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(4, -h / 2 + 12, 4, 7);
+      ctx.fillRect(11, -h / 2 + 12, 4, 7);
+
+      // Hero Cap with "DK" Emblem
+      ctx.fillStyle = capColor;
+      ctx.beginPath();
+      ctx.roundRect(-w / 2 + 1, -h / 2 - 2, w + 5, 12, 6);
+      ctx.fill();
+
+      ctx.fillStyle = player.power === 2 ? '#e52521' : '#ffffff';
+      ctx.font = '900 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('DK', 4, -h / 2 + 7);
+
+      ctx.restore();
+    }
+
+    /*************************************************************************
+     * UI Overlays, World Selector, and Resilience Coaching Modal (Phase 4 & 5)
+     *************************************************************************/
+    function updateHUD() {
+      document.getElementById('hudLives').textContent = `🍄 SUPER DK × ${lives}`;
+      const powerNames = ['꼬마 DK', '슈퍼 DK (거대)', '🔥 파이어 DK'];
+      document.getElementById('hudPower').textContent =
+        player.starTimer > 0 ? '⭐ 무적 스타 DK!' : powerNames[player.power];
+      document.getElementById('hudWorld').textContent = `1-${currentWorldId}`;
+      document.getElementById('hudCoins').textContent = `🪙 ${String(coinCount).padStart(2, '0')}`;
+      document.getElementById('hudScore').textContent = String(score).padStart(6, '0');
+
+      const stars = saveData.starCoins[currentWorldId] || [false, false, false];
+      const starContainer = document.getElementById('hudStars');
+      starContainer.innerHTML = stars
+        .map((s) => `<span class="star-slot ${s ? 'collected' : 'empty'}">★</span>`)
+        .join('');
+    }
+
+    function hideAllOverlays() {
+      document.getElementById('titleOverlay').classList.add('hidden');
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      document.getElementById('clearOverlay').classList.add('hidden');
+    }
+
+    function countTotalStars() {
+      let total = 0;
+      for (let w = 1; w <= 4; w++) {
+        const arr = saveData.starCoins[w] || [];
+        arr.forEach((v) => { if (v) total++; });
+      }
+      return total;
+    }
+
+    function renderWorldSelectModal() {
+      currentState = GAME_STATE.TITLE;
+      sfx.stopBGM();
+      hideAllOverlays();
+      const overlay = document.getElementById('titleOverlay');
+      overlay.classList.remove('hidden');
+
+      const totalStars = countTotalStars();
+      document.getElementById('totalStarSummary').textContent =
+        `모은 스타코인: ★ ${totalStars} / 12개 및 최고 점수: ${saveData.highScore}점 및 도전할 월드를 터치하세요!`;
+
+      const grid = document.getElementById('worldGrid');
+      grid.innerHTML = '';
+
+      for (let w = 1; w <= 4; w++) {
+        const m = WORLD_METADATA[w];
+        const unlocked = w <= saveData.unlockedWorld;
+        const stars = saveData.starCoins[w] || [false, false, false];
+        const starStr = stars.map((s) => (s ? '⭐' : '☆')).join(' ');
+
+        const card = document.createElement('div');
+        card.className = `world-card ${unlocked ? '' : 'locked'} ${saveData.selectedWorld === w ? 'selected' : ''}`;
+        card.innerHTML = `
+          <div class="world-code">WORLD ${m.code}</div>
+          <div class="world-icon">${unlocked ? m.icon : '🔒'}</div>
+          <div class="world-name">${m.name}</div>
+          <div class="world-desc">${m.desc}</div>
+          <div class="world-stars">${starStr}</div>
+        `;
+        card.addEventListener('click', () => {
+          sfx.init();
+          if (!unlocked) {
+            sfx.bump();
+            showToast('🔒 이전 월드를 먼저 클리어하거나 아래 [전 스테이지 자유 해금]을 눌러주세요!');
+            return;
+          }
+          saveData.selectedWorld = w;
+          saveProgress();
+          renderWorldSelectModal();
+        });
+        grid.appendChild(card);
+      }
+    }
+
+    function openGameOverModal(reason) {
+      hideAllOverlays();
+      const overlay = document.getElementById('gameOverOverlay');
+      overlay.classList.remove('hidden');
+
+      const coach = COACHING_DB[reason] || COACHING_DB.pit;
+      const msg = coach.messages[Math.floor(Math.random() * coach.messages.length)];
+
+      document.getElementById('gameOverStageInfo').textContent =
+        `WORLD 1-${currentWorldId} (${WORLD_METADATA[currentWorldId].name}) 및 모은 스타코인은 모두 안전하게 저장되었어요!`;
+      document.getElementById('coachingIcon').textContent = coach.icon;
+      document.getElementById('coachingTitle').textContent = coach.title;
+      document.getElementById('coachingMessage').textContent = msg;
+    }
+
+    function openStageClearModal() {
+      hideAllOverlays();
+      const overlay = document.getElementById('clearOverlay');
+      overlay.classList.remove('hidden');
+
+      const stars = saveData.starCoins[currentWorldId] || [false, false, false];
+      const count = stars.filter(Boolean).length;
+      const starDisplay = stars.map((s) => (s ? '⭐' : '☆')).join(' ');
+
+      const isFinalBoss = currentWorldId === 4;
+      document.getElementById('clearBanner').textContent = isFinalBoss
+        ? '👑 CONGRATULATIONS! FINAL BOSS CLEAR!'
+        : `🎉 WORLD 1-${currentWorldId} CLEAR!`;
+      document.getElementById('clearTitle').textContent = isFinalBoss
+        ? '🏆 대마왕 쿠파를 물리치고 평화를 되찾았어요!'
+        : `WORLD 1-${currentWorldId} [${WORLD_METADATA[currentWorldId].name}] 클리어!`;
+      document.getElementById('clearSubtitle').textContent = isFinalBoss
+        ? '아빠가 만든 모든 월드를 정복한 슈퍼 DK! 정말 자랑스러워요! Good Game! 👏'
+        : '포기하지 않고 끝까지 집중한 슈퍼 DK의 멋진 승리예요!';
+      document.getElementById('clearStatsText').textContent =
+        `이번 월드 스타코인: ${starDisplay} (${count}/3개) 및 전체 스타코인: ★ ${countTotalStars()}/12개`;
+
+      const btnNext = document.getElementById('btnNextWorld');
+      if (currentWorldId < 4) {
+        btnNext.style.display = 'inline-flex';
+        btnNext.textContent = `➡️ WORLD 1-${currentWorldId + 1} (${WORLD_METADATA[currentWorldId + 1].name}) 출발!`;
+      } else {
+        btnNext.style.display = 'none';
+      }
+    }
+
+    // UI Button Listeners
+    document.getElementById('btnStartStage').addEventListener('click', () => {
+      sfx.init();
+      lives = 3;
+      player.power = 0;
+      const w = saveData.selectedWorld || 1;
+      const useSavedCp = Boolean(saveData.checkpoints && saveData.checkpoints[w]);
+      checkpointActive = useSavedCp;
+      startWorld(w, useSavedCp, false);
+    });
+
+    document.getElementById('btnUnlockAll').addEventListener('click', () => {
+      sfx.init();
+      saveData.unlockedWorld = 4;
+      saveProgress();
+      sfx.powerUp();
+      showToast('🔓 월드 1-1 ~ 1-4 전체 스테이지가 자유 해금되었습니다!');
+      renderWorldSelectModal();
+    });
+
+    document.getElementById('btnContinueCheckpoint').addEventListener('click', () => {
+      sfx.init();
+      sfx.oneUp();
+      lives = 3;
+      player.power = 1; // Give Super DK Mushroom boost on Continue for encouragement!
+      startWorld(currentWorldId, checkpointActive, true);
+      showToast('⚡ 생명 3개 충전 완료! 슈퍼 DK 상태로 힘차게 다시 도전해요!');
+    });
+
+    document.getElementById('btnBackToMapFromGO').addEventListener('click', () => {
+      renderWorldSelectModal();
+    });
+
+    document.getElementById('btnNextWorld').addEventListener('click', () => {
+      if (currentWorldId < 4) {
+        checkpointActive = false;
+        startWorld(currentWorldId + 1, false, false);
+      }
+    });
+
+    document.getElementById('btnReplayStage').addEventListener('click', () => {
+      checkpointActive = false;
+      startWorld(currentWorldId, false, false);
+    });
+
+    document.getElementById('btnClearToMap').addEventListener('click', () => {
+      renderWorldSelectModal();
+    });
+
+    document.getElementById('btnMap').addEventListener('click', () => {
+      renderWorldSelectModal();
+    });
+
+    document.getElementById('btnSound').addEventListener('click', (e) => {
+      const isOn = sfx.toggleMute();
+      e.currentTarget.textContent = isOn ? '🔊 사운드 ON' : '🔇 사운드 OFF';
+    });
+
+    // Main 60fps Fixed-Timestep Game Loop (prevents 2x speed on 120Hz Galaxy Tab displays)
+    const STEP_MS = 1000 / 60;
+    let lastFrameTime = null;
+    let accumulator = 0;
+
+    function gameLoop(timestamp) {
+      if (typeof timestamp !== 'number') {
+        updateGame();
+        renderGame();
+        requestAnimationFrame(gameLoop);
+        return;
+      }
+      if (lastFrameTime === null) {
+        lastFrameTime = timestamp;
+      }
+      const delta = Math.min(Math.max(0, timestamp - lastFrameTime), 100);
+      lastFrameTime = timestamp;
+      accumulator += delta;
+
+      while (accumulator + 1e-4 >= STEP_MS) {
+        updateGame();
+        accumulator -= STEP_MS;
+      }
+      renderGame();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Initialize Initial Preview Background & World Select Modal
+    level = buildWorldLevel(saveData.selectedWorld || 1);
+    renderWorldSelectModal();
+    requestAnimationFrame(gameLoop);
+
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

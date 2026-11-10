@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a5fb4"/>
+      <stop offset="50%" stop-color="#0d2b6b"/>
+      <stop offset="100%" stop-color="#071636"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe650"/>
+      <stop offset="100%" stop-color="#f5a623"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff3b30"/>
+      <stop offset="100%" stop-color="#c41212"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="url(#gold)" stroke-width="10" stroke-opacity="0.6"/>
+  
+  <!-- Decorative Clouds & Stars -->
+  <circle cx="96" cy="110" r="14" fill="#ffe650"/>
+  <circle cx="420" cy="96" r="10" fill="#ffe650"/>
+  <circle cx="430" cy="390" r="12" fill="#ffe650"/>
+
+  <!-- Question Block Base -->
+  <rect x="96" y="340" width="320" height="106" rx="22" fill="url(#gold)" stroke="#5c3800" stroke-width="10"/>
+  <circle cx="122" cy="366" r="7" fill="#8c5600"/>
+  <circle cx="390" cy="366" r="7" fill="#8c5600"/>
+  <circle cx="122" cy="420" r="7" fill="#8c5600"/>
+  <circle cx="390" cy="420" r="7" fill="#8c5600"/>
+  <text x="256" y="410" font-family="'Arial Black', Impact, sans-serif" font-size="50" font-weight="900" text-anchor="middle" fill="#1a1a1a" stroke="#ffffff" stroke-width="3">SUPER DK</text>
+
+  <!-- Super DK Cap & Face Emblem -->
+  <!-- Face -->
+  <rect x="168" y="176" width="176" height="140" rx="46" fill="#ffcca3" stroke="#3d1e05" stroke-width="10"/>
+  <!-- Eyes -->
+  <ellipse cx="224" cy="236" rx="14" ry="22" fill="#1a1a1a"/>
+  <ellipse cx="288" cy="236" rx="14" ry="22" fill="#1a1a1a"/>
+  <circle cx="220" cy="228" r="5" fill="#ffffff"/>
+  <circle cx="284" cy="228" r="5" fill="#ffffff"/>
+  <!-- Cheeks & Smile -->
+  <ellipse cx="194" cy="258" rx="14" ry="8" fill="#ff7b7b" opacity="0.7"/>
+  <ellipse cx="318" cy="258" rx="14" ry="8" fill="#ff7b7b" opacity="0.7"/>
+  <path d="M 226 274 Q 256 300 286 274" fill="none" stroke="#3d1e05" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Red Hero Cap -->
+  <path d="M 148 188 C 148 92, 364 92, 364 188 Z" fill="url(#cap)" stroke="#3d1e05" stroke-width="10"/>
+  <rect x="136" y="172" width="240" height="32" rx="16" fill="#d91616" stroke="#3d1e05" stroke-width="10"/>
+  <!-- White Emblem Circle with DK -->
+  <circle cx="256" cy="142" r="38" fill="#ffffff" stroke="#3d1e05" stroke-width="6"/>
+  <text x="256" y="156" font-family="'Arial Black', Impact, sans-serif" font-size="38" font-weight="900" text-anchor="middle" fill="#e52521">DK</text>
+</svg>

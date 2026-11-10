@@ -1,0 +1,31 @@
+{
+  "name": "SUPER DK WORLD: 슈퍼 DK 월드",
+  "short_name": "슈퍼 DK 월드",
+  "description": "만 6세 DK를 위해 아빠가 만든 정통 클래식 플랫포머 & 영재 심리 회복탄력성 어드벤처 게임",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0d1326",
+  "theme_color": "#e52521",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
