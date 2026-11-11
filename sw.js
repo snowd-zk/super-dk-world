@@ -1,4 +1,4 @@
-const CACHE_NAME = 'super-dk-world-v1.1.0';
+const CACHE_NAME = 'super-dk-world-v2.1.0';
 const ASSETS = [
   './',
   './index.html',

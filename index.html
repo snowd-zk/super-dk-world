@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>SUPER DK WORLD - 슈퍼 DK 월드 v2.0</title>
+  <title>SUPER DK WORLD - 슈퍼 DK 월드 v2.1.0</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
@@ -361,8 +361,8 @@
 
     .world-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
       margin: 16px 0 20px 0;
     }
 
@@ -638,8 +638,8 @@
     <div class="overlay" id="titleOverlay">
       <div class="modal-card">
         <div class="title-banner">🎁 아빠가 DK를 위해 만든 특별한 선물 게임</div>
-        <h1 class="game-logo">🍄 SUPER DK WORLD v2.0 🌟</h1>
-        <p class="subtitle" id="totalStarSummary">모은 스타코인: ★ 0 / 12개 및 도전할 월드를 선택하세요!</p>
+        <h1 class="game-logo">🍄 SUPER DK WORLD v2.1.0 🌟</h1>
+        <p class="subtitle" id="totalStarSummary">모은 스타코인: ★ 0 / 30개 및 도전할 월드를 선택하세요!</p>
 
         <div class="world-grid" id="worldGrid"></div>
 
@@ -698,7 +698,7 @@
 
   <script>
     /*************************************************************************
-     * SUPER DK WORLD v2.0 - Complete 60fps NES Retro HTML5 Platformer Engine
+     * SUPER DK WORLD v2.1.0 - Complete 60fps NES Retro HTML5 Platformer Engine
      * Reverse-Engineered from Adam Jones' Super Mario Bros. GDD
      * Designed for DK (Born Nov 2020) on Samsung Galaxy Tab
      *************************************************************************/
@@ -708,10 +708,10 @@
     const defaultSaveData = {
       unlockedWorld: 1,
       selectedWorld: 1,
-      starCoins: { 1: [false, false, false], 2: [false, false, false], 3: [false, false, false], 4: [false, false, false] },
-      checkpoints: { 1: false, 2: false, 3: false, 4: false },
+      starCoins: { 1: [false, false, false], 2: [false, false, false], 3: [false, false, false], 4: [false, false, false], 5: [false, false, false], 6: [false, false, false], 7: [false, false, false], 8: [false, false, false], 9: [false, false, false], 10: [false, false, false] },
+      checkpoints: { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false },
       highScore: 0,
-      clearedWorlds: { 1: false, 2: false, 3: false, 4: false }
+      clearedWorlds: { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false }
     };
 
     function loadSaveData() {
@@ -879,7 +879,7 @@
       scheduleBGM() {
         clearTimeout(this.bgmTimer);
         if (!this.bgmPlaying || !this.enabled) return;
-        const theme = BGM_THEMES[this.bgmWorld] || BGM_THEMES[1];
+        const theme = BGM_THEMES[this.bgmWorld] || BGM_THEMES[[1,1,1,1,1,1,3,1,2,3,3][this.bgmWorld] || 1];
         const idx = this.bgmStep % theme.melody.length;
         const leadNote = theme.melody[idx];
         const bassNote = theme.bass[idx];
@@ -1084,9 +1084,16 @@
         groundColor: '#9c4800',
         grassColor: '#dc2626',
         brickColor: '#9c4800'
-      }
+      },
+      5: { code: '1-5', name: '반짝 사막 오아시스', subtitle: 'Desert Oasis', icon: '🌵', desc: '모래 언덕과 야자수 길을 지나 오아시스까지 달려가요!', skyTop: '#fcd9a0', skyBottom: '#fcd9a0', groundColor: '#c8a050', grassColor: '#f0d078', brickColor: '#b07828' },
+      6: { code: '1-6', name: '꽁꽁 얼음 나라', subtitle: 'Frozen Ice Land', icon: '⛄', desc: '미끄러운 얼음 언덕과 떠다니는 얼음 발판을 건너요!', skyTop: '#a8d8f8', skyBottom: '#d8f0ff', groundColor: '#88b8e0', grassColor: '#ffffff', brickColor: '#6890c0' },
+      7: { code: '1-7', name: '숲속 나무 위 길', subtitle: 'Forest Treetops', icon: '🌲', desc: '울창한 숲의 높은 나무 위를 점프로 건너가요!', skyTop: '#78c878', skyBottom: '#98e098', groundColor: '#6b4423', grassColor: '#2e8b2e', brickColor: '#8b5a2b' },
+      8: { code: '1-8', name: '노을 지는 언덕', subtitle: 'Sunset Hills', icon: '🌇', desc: '붉은 노을 언덕에서 뻐끔플라워를 조심해요!', skyTop: '#f89870', skyBottom: '#f8c090', groundColor: '#a04830', grassColor: '#e07838', brickColor: '#903820' },
+      9: { code: '1-9', name: '반짝 보석 동굴', subtitle: 'Crystal Cave', icon: '🔮', desc: '보석이 빛나는 동굴에서 도넛 발판을 타고 이동해요!', skyTop: '#1a0a30', skyBottom: '#1a0a30', groundColor: '#6a3a9a', grassColor: '#d070f0', brickColor: '#583088' },
+      10: { code: '1-10', name: '무지개 구름 대축제', subtitle: 'Rainbow Sky Festival', icon: '🌈', desc: '마지막 월드! 무지개 구름 위에서 슈퍼 DK 대축제!', skyTop: '#80b8ff', skyBottom: '#c0e0ff', groundColor: '#f8f0f8', grassColor: '#f870b0', brickColor: '#e86090' }
     };
 
+    const MAX_WORLD = 10;
     const TILE = 48; // 48px tile (15 rows = 720px height)
 
     // Gifted Resilience Coaching Database (Smart Parenting Pillar 6)
@@ -1593,7 +1600,167 @@
 
         enemies.push({ type: 'spiny', x: 24 * TILE, y: 11 * TILE, vx: -1.4 });
         enemies.push({ type: 'spiny', x: 50 * TILE, y: 11 * TILE, vx: -1.4 });
+      } else if (worldId >= 5 && worldId <= MAX_WORLD) {
+        // ==================== WORLD 1-5 ~ 1-10: 3단계 난이도 맵 다양성 확장 (킬러 대포 없음) ====================
+        const F = (n, o = {}) => ({ t: 'F', n, ...o });
+        const G = (n) => ({ t: 'G', n });
+        const D = (n) => ({ t: 'D', n });
+        const M = (n) => ({ t: 'M', n });
+        const L = (o = {}) => ({ t: 'L', stairs: [1, 5], ...o });
+        const SEGS = {
+          5: [ // 사막 오아시스: 평지 위주 + 파이프 + 도넛
+            F(12, { qs: [[5, 4, 'mushroom']], en: [['goomba', 9]] }),
+            G(2),
+            F(9, { pipes: [[3, 2, false]], en: [['koopa', 6]], star: [4, 4.5] }),
+            G(2),
+            F(10, { br: [[3, 3, 4]], qs: [[4, 4, 'coin']], coins: [[6, 4, 3]], en: [['goomba', 8]] }),
+            D(3),
+            F(10, { pipes: [[4, 3, true]], star: [4, 6], en: [['goomba', 8]] }),
+            G(2),
+            F(9, { en: [['spiny', 6]], qs: [[3, 4, 'flower']] }),
+            M(5),
+            F(10, { en: [['koopa', 5]], star: [6, 4], spring: 2 }),
+            D(3),
+            L({ qs: [[0, 4, 'star']] })
+          ],
+          6: [ // 꽁꽁 얼음 나라: 높낮이 변화 + 도넛 얼음 발판
+            F(10, { qs: [[5, 4, 'mushroom']], en: [['goomba', 8]] }),
+            D(3),
+            F(8, { top: 12, star: [3, 4], en: [['koopa', 5]] }),
+            G(2),
+            F(9, { top: 13, pipes: [[3, 2, true]], coins: [[6, 4, 3]] }),
+            D(3),
+            F(8, { top: 12, br: [[2, 4, 4]], qs: [[3, 4, 'flower']], en: [['goomba', 6]] }),
+            G(2),
+            F(8, { top: 13, en: [['spiny', 5]], star: [3, 6] }),
+            M(5),
+            F(10, { top: 13, hidden: [4, 4], en: [['koopa', 7]] }),
+            D(3),
+            F(8, { top: 13, spring: 3, star: [5, 5], en: [['goomba', 6]] }),
+            L({ qs: [[0, 4, 'flower']] })
+          ],
+          7: [ // 숲속 나무 위: 나는 쿠파 + 스프링 + 벽돌 발판
+            F(11, { qs: [[4, 4, 'mushroom']], en: [['goomba', 8], ['flykoopa', 6]] }),
+            G(2),
+            F(8, { top: 12, br: [[2, 3, 4]], star: [3, 5], en: [['koopa', 5]] }),
+            G(2),
+            F(9, { top: 13, pipes: [[3, 3, true]], en: [['flykoopa', 7]] }),
+            D(3),
+            F(8, { top: 12, qs: [[5, 4, 'coin']], star: [5, 6.5] }),
+            G(2),
+            F(9, { top: 13, en: [['spiny', 6], ['goomba', 3]] }),
+            M(5),
+            F(10, { br: [[2, 4, 4]], qs: [[3, 4, 'flower']], en: [['flykoopa', 6]], star: [7, 4] }),
+            G(2),
+            F(8, { top: 12, en: [['koopa', 5]] }),
+            L({})
+          ],
+          8: [ // 노을 지는 언덕: 뻐끔플라워 많은 파이프 길
+            F(10, { qs: [[4, 4, 'mushroom']], pipes: [[3, 2, true]] }),
+            G(2),
+            F(10, { en: [['goomba', 4], ['goomba', 7]], star: [5, 4] }),
+            D(3),
+            F(11, { pipes: [[3, 3, true], [6, 2, false]], star: [3, 6] }),
+            G(2),
+            F(8, { top: 12, br: [[2, 3, 4]], qs: [[3, 4, 'flower']], en: [['koopa', 5]] }),
+            G(2),
+            F(10, { top: 13, pipes: [[4, 2, true]], en: [['goomba', 8]], hidden: [7, 4] }),
+            M(5),
+            F(10, { en: [['koopa', 6]], star: [4, 4] }),
+            D(3),
+            F(8, { pipes: [[3, 2, true]] }),
+            L({ qs: [[0, 4, 'star']] })
+          ],
+          9: [ // 반짝 보석 동굴: 도넛 구간 많음 + 가시돌이
+            F(10, { qs: [[4, 4, 'mushroom']], en: [['goomba', 8]] }),
+            D(3),
+            F(7, { br: [[1, 4, 4]], star: [3, 5] }),
+            D(3),
+            F(8, { top: 12, en: [['spiny', 5]], qs: [[3, 4, 'flower']] }),
+            G(2),
+            F(9, { top: 13, pipes: [[3, 2, true]], en: [['koopa', 6]] }),
+            D(4),
+            F(8, { br: [[2, 4, 4]], star: [4, 4.5], en: [['goomba', 5]] }),
+            M(5),
+            F(9, { hidden: [4, 4], en: [['spiny', 6]], coins: [[2, 4, 3]] }),
+            D(3),
+            F(8, { star: [3, 6], pipes: [[3, 3, false]], en: [['koopa', 6]] }),
+            L({})
+          ],
+          10: [ // 무지개 구름 대축제: 코인 잔치 + 공중 이동 발판 (마지막 월드)
+            F(11, { qs: [[4, 4, 'mushroom'], [6, 4, 'flower']], coins: [[2, 4, 5]], en: [['goomba', 9]] }),
+            M(5),
+            F(9, { coins: [[1, 4, 5]], star: [4, 4.5], en: [['flykoopa', 6]] }),
+            G(2),
+            F(9, { top: 12, br: [[2, 3, 4]], qs: [[3, 4, 'star']], en: [['koopa', 6]] }),
+            D(3),
+            F(9, { top: 13, pipes: [[3, 3, true]], star: [3, 6], coins: [[6, 4, 3]] }),
+            G(2),
+            F(8, { en: [['spiny', 5]], hidden: [5, 4] }),
+            M(5),
+            F(9, { top: 12, qs: [[3, 4, 'flower']], en: [['flykoopa', 6]], star: [6, 4] }),
+            D(3),
+            F(8, { top: 13, coins: [[1, 4, 6]], en: [['goomba', 5], ['koopa', 7]] }),
+            L({ coins: [[2, 4, 5]], qs: [[0, 4, 'star']] })
+          ]
+        };
+
+        let x = 0;
+        let top = 13;
+        let starIdx = 0;
+        let cpSet = false;
+        for (const sg of SEGS[worldId]) {
+          if (sg.t === 'G') { x += sg.n; continue; }
+          if (sg.t === 'D') {
+            for (let k = 0; k < sg.n; k++) addDonut(x + k, top - 1);
+            x += sg.n;
+            continue;
+          }
+          if (sg.t === 'M') {
+            movingPlatforms.push({
+              x: (x - 1) * TILE, y: top * TILE, w: TILE * 3.5, h: 24,
+              minX: (x - 1) * TILE, maxX: (x + 2) * TILE, minY: top * TILE, maxY: top * TILE, vx: 1.6, vy: 0
+            });
+            x += sg.n;
+            continue;
+          }
+          const n = sg.t === 'L' ? 95 - x : sg.n;
+          if (sg.top) top = sg.top;
+          if (sg.t === 'L') top = 13;
+          const s = x;
+          addGroundRange(s, s + n - 1, top);
+          (sg.pipes || []).forEach(([o, h, pir]) => addPipe(s + o, h, top, pir));
+          (sg.qs || []).forEach(([o, up, c]) => addQuestion(s + o, top - up, c));
+          (sg.br || []).forEach(([o, len, up]) => { for (let k = 0; k < len; k++) addBrick(s + o + k, top - up); });
+          (sg.hidden ? [sg.hidden] : []).forEach(([o, up]) => addHiddenBlock(s + o, top - up, 'oneup'));
+          (sg.coins || []).forEach(([o, c, up]) => addCoinArc(s + o, top - up, c));
+          if (sg.spring !== undefined) springs.push({ x: (s + sg.spring) * TILE, y: (top - 1) * TILE, w: TILE, h: TILE, compress: 0 });
+          if (sg.star) {
+            starCoins.push({ index: starIdx, x: (s + sg.star[0]) * TILE + 4, y: (top - sg.star[1]) * TILE, w: 40, h: 40, collected: alreadySavedStars[starIdx] });
+            starIdx++;
+          }
+          (sg.en || []).forEach(([type, o]) => {
+            if (type === 'flykoopa') {
+              enemies.push({ type, x: (s + o) * TILE, y: (top - 5) * TILE, baseY: (top - 5) * TILE, vx: -1.2, phase: o });
+            } else {
+              enemies.push({ type, x: (s + o) * TILE, y: (top - 2) * TILE, vx: type === 'spiny' ? -1.3 : -1.4 });
+            }
+          });
+          if (sg.t === 'L') {
+            const [so, sn] = sg.stairs;
+            for (let step = 0; step < sn; step++) {
+              for (let h = 0; h <= step; h++) addHardBlock(s + so + step, top - 1 - h);
+            }
+            goal = { x: (s + so + sn + 4) * TILE, y: (top - 10) * TILE, height: 10 * TILE };
+          }
+          if (!cpSet && s >= 40 && sg.t === 'F') {
+            checkpoint = { x: (s + 1) * TILE, y: (top - 3) * TILE, reached: false };
+            cpSet = true;
+          }
+          x += n;
+        }
       }
+
 
       return {
         worldId,
@@ -2177,7 +2344,7 @@
 
       score += 1000 + levelTime * 50;
       saveData.clearedWorlds[currentWorldId] = true;
-      if (currentWorldId < 4 && saveData.unlockedWorld < currentWorldId + 1) {
+      if (currentWorldId < MAX_WORLD && saveData.unlockedWorld < currentWorldId + 1) {
         saveData.unlockedWorld = currentWorldId + 1;
       }
       if (score > saveData.highScore) {
@@ -2635,7 +2802,7 @@
         if (player.x + player.w >= level.checkpoint.x) {
           level.checkpoint.reached = true;
           checkpointActive = true;
-          if (!saveData.checkpoints) saveData.checkpoints = { 1: false, 2: false, 3: false, 4: false };
+          if (!saveData.checkpoints) saveData.checkpoints = { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false };
           saveData.checkpoints[currentWorldId] = true;
           saveProgress();
           sfx.checkpoint();
@@ -3064,7 +3231,7 @@
       for (let i = 0; i < 14; i++) {
         const cx = ((i * 340 - cameraX * 0.25) % 4600 + 4600) % 4600 - 200;
         const cy = 90 + (i % 3) * 55;
-        if (currentWorldId === 2 || currentArea === 'sublevel') {
+        if (currentWorldId === 2 || currentWorldId === 9 || currentArea === 'sublevel') {
           ctx.fillStyle = 'rgba(0, 232, 216, 0.14)';
           ctx.beginPath();
           ctx.moveTo(cx, cy + 40);
@@ -3659,7 +3826,7 @@
 
     function countTotalStars() {
       let total = 0;
-      for (let w = 1; w <= 4; w++) {
+      for (let w = 1; w <= MAX_WORLD; w++) {
         (saveData.starCoins[w] || []).forEach((v) => { if (v) total++; });
       }
       return total;
@@ -3674,12 +3841,12 @@
 
       const totalStars = countTotalStars();
       document.getElementById('totalStarSummary').textContent =
-        `모은 스타코인: ★ ${totalStars} / 12개 및 최고 점수: ${saveData.highScore}점 및 도전할 월드를 터치하세요!`;
+        `모은 스타코인: ★ ${totalStars} / ${MAX_WORLD * 3}개 및 최고 점수: ${saveData.highScore}점 및 도전할 월드를 터치하세요!`;
 
       const grid = document.getElementById('worldGrid');
       grid.innerHTML = '';
 
-      for (let w = 1; w <= 4; w++) {
+      for (let w = 1; w <= MAX_WORLD; w++) {
         const m = WORLD_METADATA[w];
         const unlocked = w <= saveData.unlockedWorld;
         const stars = saveData.starCoins[w] || [false, false, false];
@@ -3733,21 +3900,24 @@
       const count = stars.filter(Boolean).length;
       const starDisplay = stars.map((s) => (s ? '⭐' : '☆')).join(' ');
 
-      const isFinalBoss = currentWorldId === 4;
+      const isFinalBoss = currentWorldId === MAX_WORLD;
+      const isBowserClear = currentWorldId === 4;
       document.getElementById('clearBanner').textContent = isFinalBoss
-        ? '👑 CONGRATULATIONS! FINAL BOSS CLEAR!'
+        ? '👑 CONGRATULATIONS! ALL WORLDS CLEAR!'
+        : isBowserClear ? '👑 BOWSER CLEAR! 쿠파 격파!'
         : `🎉 WORLD 1-${currentWorldId} CLEAR!`;
       document.getElementById('clearTitle').textContent = isFinalBoss
-        ? '🏆 대마왕 쿠파를 물리치고 평화를 되찾았어요!'
+        ? '🏆 무지개 대축제까지 모든 월드를 정복했어요!'
+        : isBowserClear ? '🏆 대마왕 쿠파를 물리쳤어요! 새로운 월드가 열렸어요!'
         : `WORLD 1-${currentWorldId} [${WORLD_METADATA[currentWorldId].name}] 클리어!`;
       document.getElementById('clearSubtitle').textContent = isFinalBoss
         ? '아빠가 만든 모든 월드를 정복한 슈퍼 DK! 정말 자랑스러워요! Good Game! 👏'
         : '포기하지 않고 끝까지 집중한 슈퍼 DK의 멋진 승리예요!';
       document.getElementById('clearStatsText').textContent =
-        `이번 월드 스타코인: ${starDisplay} (${count}/3개) 및 전체 스타코인: ★ ${countTotalStars()}/12개`;
+        `이번 월드 스타코인: ${starDisplay} (${count}/3개) 및 전체 스타코인: ★ ${countTotalStars()}/${MAX_WORLD * 3}개`;
 
       const btnNext = document.getElementById('btnNextWorld');
-      if (currentWorldId < 4) {
+      if (currentWorldId < MAX_WORLD) {
         btnNext.style.display = 'inline-flex';
         btnNext.textContent = `➡️ WORLD 1-${currentWorldId + 1} (${WORLD_METADATA[currentWorldId + 1].name}) 출발!`;
       } else {
@@ -3767,10 +3937,10 @@
 
     document.getElementById('btnUnlockAll').addEventListener('click', () => {
       sfx.init();
-      saveData.unlockedWorld = 4;
+      saveData.unlockedWorld = MAX_WORLD;
       saveProgress();
       sfx.powerUp();
-      showToast('🔓 월드 1-1 ~ 1-4 전체 스테이지가 자유 해금되었습니다!');
+      showToast('🔓 월드 1-1 ~ 1-10 전체 스테이지가 자유 해금되었습니다!');
       renderWorldSelectModal();
     });
 
@@ -3788,7 +3958,7 @@
     });
 
     document.getElementById('btnNextWorld').addEventListener('click', () => {
-      if (currentWorldId < 4) {
+      if (currentWorldId < MAX_WORLD) {
         checkpointActive = false;
         startWorld(currentWorldId + 1, false, false);
       }
